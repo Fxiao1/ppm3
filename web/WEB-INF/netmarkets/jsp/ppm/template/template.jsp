@@ -145,10 +145,10 @@
                                     <input type="hidden" name="id" >
                                 </div>
                             </div>
-                            <div class="form-group">
+                            <div class="form-group hide">
                                 <label  class="col-md-3 control-label">检验特性数量</label>
                                 <div class="col-md-7">
-                                    <input class="form-control" type="number" placeholder="点击输入" name="total" >
+                                    <input class="form-control" value="0" type="number" placeholder="点击输入" name="total" >
                                 </div>
                             </div>
                             <div class="form-group">
