@@ -97,7 +97,6 @@
                 return 0;
             }
         }
-
         //后台计算一些数值
         function calculation(){
             var formData=$("#form1").serializeArray();
@@ -122,9 +121,23 @@
             })
         }
 
-
         function bindEven() {
+            $("#instanceDataTable3").on("change","input.productCount",function(){
+                //检查用户输入的产品总数是否超过“生产数量”上的值
+                //生产数量
+                var quantity=parseInt($("#formInfo").find("span[name=quantity]").text());
+                //产品总数
+                var num=0;
+                $.each($("#instanceDataTable3").find("input.productCount"),function (i, n) {
+                    var temp=$(n).val();
+                    num+=temp==""?0:parseInt(temp);
+                })
+                if(num>quantity){
+                    alert("产品数之和不能大于生产数量！生产数量="+quantity+"，当前产品总数="+num);
+                    $(this).val(0);
+                };
 
+            });
         }
         /**
          * 获取form表单定义，根据这个数据去动态生成表格
@@ -159,36 +172,35 @@
          */
         function initMyTable2(resultData){
             $("#instanceDataTable2>tbody").html("");
-            //封装数据成为一个对象，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
+            //封装数据成为一个对象“a”，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}
             var a={};
+            var defectNumberCounts={};
             $.each(resultData,function(i,n){
-                if(a[n.procedureName]){
-                    a[n.procedureName].push(n)
-                }else{
+                if(a[n.procedureName]){//旧工序
+                    a[n.procedureName].push(n);
+                    //计算检验特性检出的缺陷总数
+                    defectNumberCounts[n.procedureName]=
+                        defectNumberCounts[n.procedureName]
+                        +
+                        (typeof(n.defectNumberItem)=="undefined"?0:parseInt(n.defectNumberItem));
+                }else{//新工序
                     var b=[];
                     b.push(n);
                     a[n.procedureName]=b;
+                    //计算检验特性检出的缺陷总数
+                    defectNumberCounts[n.procedureName]=
+                        typeof(n.defectNumberItem)=="undefined"?0:parseInt(n.defectNumberItem);
                 }
-
             })
 
             //先遍历key,再遍历后面的数组
             var indexNum=0;
             var _input=$("<input>").addClass("form-control").css("width","100%");
             $.each(a,function(j,k){
-                //特性总数相加值
-                var defectNumberCount=0;
-                //特性总数相加值将要投放的位置的工序名
-                var _className2="";
-                var _className3="";
-                //工序特性相加
-                var procePpmCount=0;
                 var le=k.length;
                 if(le>1){
                     $.each(k,function(m,n){
-                        if(n.defectNumberItem) defectNumberCount+=n.defectNumberItem;
-                        if(n.characPPM) procePpmCount+=n.characPPM;
                         if(m==0){
                             var _row=$('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
                             _row.children("td:eq(0)").text(++indexNum).prop("rowspan",le);
@@ -205,11 +217,9 @@
                             _row.children("td:eq(6)").text(n.defectNumber).addClass("qxNumber");
                             _row.children("td:eq(7)").text(n.kj);
                             _row.children("td:eq(8)").prop("rowspan",le).addClass(n.procedureName+"_proceQx")
-                                .addClass("defectNumberCount"+indexNum).text(n.defectNumberItem);
-                            _className2="defectNumberCount"+indexNum;
-                            _row.children("td:eq(9)").prop("rowspan",le)
-                                .addClass("_procePpm"+indexNum);
-                            _className3="_procePpm"+indexNum;
+                                .text(defectNumberCounts[n.procedureName]);
+
+                            _row.children("td:eq(9)").prop("rowspan",le).text(typeof(n.procedurePpm)=="undefined"?0:n.procedurePpm);
                             $("#instanceDataTable2>tbody").append(_row);
                         }else{
                             var _row=$('<tr><td></td><td></td><td></td><td></td><td></td></tr>');
@@ -224,8 +234,6 @@
                             $("#instanceDataTable2>tbody").append(_row);
                         }
                     });
-                    $("#instanceDataTable2>tbody").find("td."+_className2).text(defectNumberCount);
-                    $("#instanceDataTable2>tbody").find("td."+_className3).text(procePpmCount);
                 }else{
                     n=k[0];
                     var _row=$('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>');
@@ -256,6 +264,14 @@
          * “ext.modular.datainstance.DatainstanceEntity”对象列表
          */
         function initMyTable3(resultData) {
+            if(resultData.length==0){
+               return false;
+            }
+            var formItem=resultData[0];
+            //放入一些信息，在提交的时候需要传入后台
+            $("#form1").find("input[name=quantity]").val(formItem.quantity);
+            //$("#form1").find("input[name=quantity]").val(formItem.quantity);
+
             //封装数据成为一个对象，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}
             var a={};
@@ -270,7 +286,9 @@
 
             });
             //先遍历key,再遍历后面的数组
+            //工序数目
             var indexNum=0;
+            //表格真实行数
             var rowNumber=0;
             //当前页面正在进行什么操作？
             var pageType=$("#hideInfo").find("input[name=pageType]").val();
@@ -287,31 +305,43 @@
                 var le=k.length;
                 //如果工序下面有特性
                 if(le>1){
+                    var procedureName,productCount,checkType,checkPerson,checkTime,kj,procedureId;
                     $.each(k,function(m,n){
                         //如果是当前工序的首行
                         if(m==0){
+                            procedureName=n.procedureName;
+                            procedureId=n.twId;
+                            productCount=n.productCount;
+                            checkType=n.checkType;
+                            checkPerson=n.checkPerson;
+                            checkTime=n.checkTime;
+                            kj=n.kj;
                             var _row=$('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td> <td class="hide Info"></td></tr>');
                             _row.children("td:eq(0)").text(++indexNum).prop("rowspan",le);
-                            _row.children("td:eq(1)").text(n.procedureName).prop("rowspan",le).append(
+                            _row.children("td:eq(1)").prop("rowspan",le).append(
                                 _input.clone()
-                                    .prop({"type":"hidden","name":"procedureName"}).val(n.procedureName)
+                                    .attr({"readonly":"readonly","type":"text","name":"procedureName_"+rowNumber,"value":n.procedureName})
+
+                            ).append(
+                                _input.clone()
+                                    .prop({"type":"hidden","name":"procedureId_"+rowNumber}).val(n.twId)
 
                             );
                             _row.children("td:eq(2)").prop("rowspan",le).append(
                                 _input.clone()
-                                    .prop({"type":"number","name":n.procedureName+".productCount","value":n.productCount})
-                                    .addClass(n.procedureName+"_productCount")
+                                    .prop({"type":"number","name":"productCount_"+rowNumber,"value":n.productCount})
+                                    .addClass("productCount")
                             );
                             _row.children("td:eq(3)").append(
                                 _input.clone().attr(
-                                    {"type":"text","name":n.procedureName+".characQuantity","value":n.characQuantity,
+                                    {"type":"text","name":"characQuantity_"+rowNumber,"value":n.characQuantity,
                                     "readonly":"readonly"}
                                 )
 
                             );
                             _row.children("td:eq(4)").append(
                                 _input.clone().attr(
-                                    {"type":"text","name":n.procedureName+".characName","value":n.characName,
+                                    {"type":"text","name":"characName_"+rowNumber,"value":n.characName,
                                         "readonly":"readonly"}
                                 )
 
@@ -320,14 +350,14 @@
                                 _input.clone()
                                     .prop({
                                         "type":"number",
-                                        "name":n.procedureName+"_defectNumber",
+                                        "name":"defectNumber_"+rowNumber,
                                         "value":n.defectNumber
                                     })
                                     .addClass("qxNumber")
                             ).append(
-                                _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber++})
+                                _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                             );
-                            var temp_select=_select.clone().prop("name",n.procedureName+".checkType");
+                            var temp_select=_select.clone().prop("name","checkType_"+rowNumber);
                             if(n.checkType){
                                 temp_select.val(n.checkType);
                             }
@@ -337,12 +367,12 @@
                             );
                             _row.children("td:eq(7)").append(
                                 _input.clone()
-                                    .prop({"type":"text","name":n.procedureName+".checkPerson",
+                                    .prop({"type":"text","name":"checkPerson_"+rowNumber,
                                     "value":n.checkPerson})
                             ).prop("rowspan",le);
 
                             var checkTimeInput=_input.clone()
-                                .prop({"type":"datetime-local","name":n.procedureName+".checkTime"});
+                                .prop({"type":"datetime-local","name":"checkTime_"+rowNumber});
                             if(n.checkTime){
                                 var checkTimeStr=n.checkTime.replace(" ","T");
                                 checkTimeInput.val(checkTimeStr);
@@ -352,25 +382,27 @@
                             );
 
                             _row.children("td:eq(9)").append(
-                                _input.clone().prop({"type":"hidden","name":n.procedureName+"_kj"}).val(n.kj)
+                                _input.clone().prop({"type":"hidden","name":"kj_"+rowNumber}).val(n.kj)
                             );
                             if(n.id&&pageType=="update"){
-                                var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds"}).val(n.id);
+                                var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds_"+rowNumber}).val(n.id);
                                 _row.children("td:eq(9)").append(dataItemId);
                             }
                             $("#instanceDataTable3>tbody").append(_row);
+                            $("#form1").find("input[name=maxRowNumber]").val(rowNumber);
+                            rowNumber++;
                         }else{
                             var _row=$('<tr><td></td><td></td><td></td> <td class="hide Info"></td></tr>');
                             _row.children("td:eq(0)").append(
                                 _input.clone().attr(
-                                    {"type":"text","name":n.procedureName+".characQuantity","value":n.characQuantity,
+                                    {"type":"text","name":"characQuantity_"+rowNumber,"value":n.characQuantity,
                                         "readonly":"readonly"}
                                 )
 
                             );
                             _row.children("td:eq(1)").append(
                                 _input.clone().attr(
-                                    {"type":"text","name":n.procedureName+".characName","value":n.characName,
+                                    {"type":"text","name":"characName_"+rowNumber,"value":n.characName,
                                         "readonly":"readonly"}
                                 )
 
@@ -379,51 +411,69 @@
                                 _input.clone()
                                     .prop({
                                         "type":"number",
-                                        "name":n.procedureName+"_defectNumber",
+                                        "name":"defectNumber_"+rowNumber,
                                         "value":n.defectNumber
                                     })
                                     .addClass("qxNumber").text(n.defectNumber)
                             ).append(
-                                _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber++})
+                                _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                             );
+
                             _row.children("td:eq(3)").append(
-                                _input.clone().prop({"type":"hidden","name":n.procedureName+"_kj"}).val(n.kj)
+                                _input.clone().attr({"type":"hidden","name":"kj_"+rowNumber,"value":kj})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"checkTime_"+rowNumber,"value":checkTime})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"checkPerson_"+rowNumber,"value":checkPerson})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"checkType_"+rowNumber,"value":checkType})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"productCount_"+rowNumber,"value":productCount})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"procedureName_"+rowNumber,"value":procedureName})
+                            ).append(
+                                _input.clone().attr({"type":"hidden","name":"procedureId_"+rowNumber,"value":procedureId})
                             );
+
                             if(n.id&&pageType=="update"){
-                                var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds"}).val(n.id);
+                                var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds_"+rowNumber}).val(n.id);
                                 _row.children("td:eq(3)").append(dataItemId);
                             }
                             $("#instanceDataTable3>tbody").append(_row);
+                            $("#form1").find("input[name=maxRowNumber]").val(rowNumber);
+                            rowNumber++;
                         }
                     });
                 }else{
                     n=k[0];
                     var _row=$('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td> <td class="hide Info"></td></tr>');
                     _row.children("td:eq(0)").text(++indexNum);
-                    _row.children("td:eq(1)").text(n.procedureName).append(
+                    _row.children("td:eq(1)").append(
+                        _input.clone().attr({"readonly":"readonly","type":"text","name":"procedureName_"+rowNumber,"value":n.procedureName})
+                    ).append(
                         _input.clone()
-                            .prop({"type":"hidden","name":"procedureName"}).val(n.procedureName)
+                            .prop({"type":"hidden","name":"procedureId_"+rowNumber}).val(n.twId)
 
                     );
                     _row.children("td:eq(2)").append(
                         _input.clone()
                             .attr({
                                 "type":"number",
-                                "name":n.procedureName+".productCount",
+                                "name":"productCount_"+rowNumber,
                                 "value":n.productCount
                             })
-                            .addClass(n.procedureName+"_productCount")
+                            .addClass("productCount")
                     );
                     _row.children("td:eq(3)").append(
                         _input.clone().attr(
-                            {"type":"text","name":n.procedureName+".characQuantity","value":n.characQuantity,
+                            {"type":"text","name":"characQuantity_"+rowNumber,"value":n.characQuantity,
                                 "readonly":"readonly"}
                         )
 
                     );
                     _row.children("td:eq(4)").append(
                         _input.clone().attr(
-                            {"type":"text","name":n.procedureName+".characName","value":n.characName,
+                            {"type":"text","name":"characName_"+rowNumber,"value":n.characName,
                                 "readonly":"readonly"}
                         )
 
@@ -432,14 +482,14 @@
                         _input.clone()
                             .prop({
                                 "type":"number",
-                                "name":n.procedureName+"_defectNumber",
+                                "name":"defectNumber_"+rowNumber,
                                 "value":n.defectNumber
                             })
                             .addClass("qxNumber")
                     ).append(
-                        _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber++})
+                        _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                     );
-                    var temp_select=_select.clone().prop("name",n.procedureName+".checkType");
+                    var temp_select=_select.clone().prop("name","checkType_"+rowNumber);
                     if(n.checkType){
                         temp_select.val(n.checkType);
                     }
@@ -448,13 +498,13 @@
                         _input.clone()
                             .prop({
                                 "type":"text",
-                                "name":n.procedureName+".checkPerson",
+                                "name":"checkPerson_"+rowNumber,
                                 "value":n.checkPerson
                             })
                     );
 
                     var checkTimeInput=_input.clone()
-                        .prop({"type":"datetime-local","name":n.procedureName+".checkTime"});
+                        .prop({"type":"datetime-local","name":"checkTime_"+rowNumber});
                     if(n.checkTime){
                         var checkTimeStr=n.checkTime.replace(" ","T");
                         checkTimeInput.val(checkTimeStr);
@@ -463,17 +513,21 @@
                         checkTimeInput
                     );
                     _row.children("td:eq(9)").append(
-                        _input.clone().prop({"type":"hidden","name":n.procedureName+"_kj"}).val(n.kj)
+                        _input.clone().prop({"type":"hidden","name":"kj_"+rowNumber}).val(n.kj)
                     );
                     if(n.id&&pageType=="update"){
-                        var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds"}).val(n.id);
+                        var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds_"+rowNumber}).val(n.id);
                         _row.children("td:eq(9)").append(dataItemId);
                     }
                     $("#instanceDataTable3>tbody").append(_row);
+                    $("#form1").find("input[name=maxRowNumber]").val(rowNumber);
+                    rowNumber++;
                 }
+
             })
             $("#instanceDataTable3>tbody").find("td").addClass("text-center");
         }
+
 
 
         function showFormInfo(formItem) {
@@ -531,7 +585,6 @@
 <div class="container-fluid">
     <div id="hideInfo" class="hide">
         <input type="hidden" name="productId" value="<%=request.getParameter("productId")%>">
-
         <input type="hidden" name="allDataInstance" >
         <input type="hidden" name="pageType" value="add">
     </div>
@@ -578,6 +631,8 @@
         <form id="form1">
             <input type="hidden" name="logo" value="<%=request.getParameter("formLogo")%>">
             <input type="hidden" name="productId" value="<%=request.getParameter("productId")%>">
+            <input type="hidden" name="maxRowNumber" >
+            <input type="hidden" name="quantity" >
             <table id="instanceDataTable3" class="table table-bordered table-striped">
                 <thead><tr>
                     <th>序号</th>

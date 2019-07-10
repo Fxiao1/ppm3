@@ -148,7 +148,7 @@ public class DatainstanceController {
      * @return ext.modular.common.DataPack<java.util.List<ext.modular.datainstance.DatainstanceEntity>>
      **/
     private DataPack<List<DatainstanceEntity>> getAllDataInstanceForRequest(HttpServletRequest request){
-        String currentProcedureName;
+        /*String currentProcedureName;
         String []procedureNames=request.getParameterValues("procedureName");
         if(procedureNames==null){
             log.info("procedureNames==null");
@@ -231,9 +231,111 @@ public class DatainstanceController {
                 AllDataInstance.add(datainstance);
             }
         }
+        return ResultUtils.packData(AllDataInstance,"",true);*/
+
+        int dataRowNum=strToInt(request.getParameter("maxRowNumber"));
+        int quantity=strToInt(request.getParameter("quantity"));
+        //产品数
+        int productCount=0;
+        String checkType=null,checkPerson=null,oldProcedureIdStr=null,newProcedureIdStr;
+        Date checkTime=null;
+        //所有的条目的容器
+        List<DatainstanceEntity> AllDataInstance=new LinkedList<>();
+        //当前工序下的数据
+        List<DatainstanceEntity>currentProcedure=new LinkedList<>();
+        boolean isNewProcedure=false;
+        for (int i = 0; i < dataRowNum + 1; i++) {
+            DatainstanceEntity ins=new DatainstanceEntity();
+            newProcedureIdStr=request.getParameter("procedureId_"+i);
+            ins.setProcedureName(request.getParameter("procedureName_"+i));
+            //本行数据有工序id，且当前行与旧行数据的id不同，则说明到了新的工序行了。如果是新工序了，则更新产品数、检验类型、检验人、检验时间这几个变量
+            if(newProcedureIdStr!=null&&(!newProcedureIdStr.equals(oldProcedureIdStr))){
+                oldProcedureIdStr=newProcedureIdStr;
+                productCount=strToInt(request.getParameter("productCount_"+i));
+                checkType=request.getParameter("checkType_"+i);
+                checkPerson=request.getParameter("checkPerson_"+i);
+                try {
+                    checkTime=strToDate(request.getParameter("checkTime_"+i));
+                } catch (ParseException e) {
+                    e.printStackTrace();
+                }
+                isNewProcedure=true;
+            }else{
+                isNewProcedure=false;
+            }
+            ins.setProductCount(productCount);
+            String characQuantityStr=request.getParameter("characQuantity_"+i);
+            ins.setCharacQuantity(strToInt(characQuantityStr));
+
+            ins.setCharacName(request.getParameter("characName_"+i));
+            ins.setDefectNumber(strToInt(request.getParameter("defectNumber_"+i)));
+            ins.setCheckType(checkType);
+            ins.setCheckPerson(checkPerson);
+            ins.setCheckTime(checkTime);
+            ins.setKj(strToInt(request.getParameter("kj_"+i)));
+            ins.setLogo(strToInt(request.getParameter("logo")));
+            ins.setProductId(strToInt(request.getParameter("productId")));
+            log.info("接收到的logo={},接收到的产品id={}。",request.getParameter("logo")
+                ,request.getParameter("productId"));
+            Integer id=strToInt(request.getParameter("dataItemIds_"+i));
+            if(id!=null){
+                ins.setId(id);
+            }
+            //工序检验特性总数
+            ins.setCharacteristicsTotal(ins.getProductCount()*ins.getCharacQuantity());
+            //工序检验特性检出的缺陷总数对应的每条特性的值
+            ins.setDefectNumberItem(ins.getDefectNumber()*ins.getKj());
+
+            if(ins.getCharacQuantity()==0) {
+                //避免下一步计算的除数为0，直接退出循环。本次数据肯定有误
+                log.error("正在执行ext.modular.datainstance.DatainstanceController方法，" +
+                                "即将发生By zero错误。datainstance.getCharacQuantity()的数字为0，而除数不能为0，本次接收的key为{}，接收到的值为{}",
+                        "characQuantity_"+i,characQuantityStr
+                );
+                return ResultUtils.packData(null,"数据错误，详细错误请查看日志",false);
+            }
+            //特性的ppm值
+            Integer a=ins.getDefectNumber();
+            Integer b=ins.getCharacQuantity();
+            Integer c=1000000;
+            BigDecimal bi1=new BigDecimal(a.toString());
+            BigDecimal bi2=new BigDecimal(b.toString());
+            BigDecimal bi3=new BigDecimal(c.toString());
+            BigDecimal divide=bi1.divide(bi2,6, RoundingMode.HALF_UP);
+            BigDecimal multiply=divide.multiply(bi3);
+            ins.setCharacPPM(multiply.intValue());
+            log.info("正在计算第{}条特性的ppm值，参数为：defectNumber={}、characQuantity={}；结果为characPPM={}"
+                    ,i+1,ins.getDefectNumber(),ins.getCharacQuantity(),ins.getCharacPPM());
+            ins.setTwId(strToInt(request.getParameter("procedureId_"+i)));
+            ins.setQuantity(quantity);
+            //这是新工序的数据，且前一个工序下有数据。或者当前是最后一次遍历。则对其进行一些计算和赋值
+            log.info("i={},isNewProcedure={},currentProcedure.size={}",i,isNewProcedure,currentProcedure.size());
+            if((isNewProcedure&&currentProcedure.size()>0)||i==dataRowNum){
+                //如果是最后一次，需要将最后一次的数据添加进去
+                if(i==dataRowNum){
+                    currentProcedure.add(ins);
+                }
+                int procedurePpm=0;
+                //进行一些赋值
+                for (int j = 0; j < currentProcedure.size(); j++) {
+                    procedurePpm+=currentProcedure.get(j).getCharacPPM();
+                }
+                for (int j = 0; j < currentProcedure.size(); j++) {
+                    currentProcedure.get(j).setProcedurePpm(procedurePpm);
+                }
+                log.info("AllDataInstance.size={},currentProcedure.size={},i={}",
+                        AllDataInstance.size(),
+                        currentProcedure.size(),
+                        i
+                );
+                AllDataInstance.addAll(currentProcedure);
+                currentProcedure.clear();
+            }
+            log.info("正在添加实例,i={}，添加前currentProcedure.size={},当前实例={}",i,currentProcedure.size(),ins.toString());
+            currentProcedure.add(ins);
+
+        }
         return ResultUtils.packData(AllDataInstance,"",true);
     }
-
-
 
 }

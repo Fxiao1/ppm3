@@ -3,8 +3,11 @@ package ext.modular.product;
 import ext.modular.common.BasicEntity;
 
 public class ProductEntity extends BasicEntity {
+    //产品名称
     private String name;
+    //
     private String model_id;
+    //产品代号
     private String product_code;
     private String model_type;
 
