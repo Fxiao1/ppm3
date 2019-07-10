@@ -66,6 +66,38 @@ public class ProcedureSer {
         }
         return procedureList;
     }
+    //根据工序id查询工序信息
+    public ProcedureEntity getProcedureById(int id){
+        Connection connection=null;
+        Statement statement=null;
+        ResultSet resultSet=null;
+        String str="";
+        ProcedureEntity procedureEntity=new ProcedureEntity();
+        try{
+            connection=ConnectionUtil.getJdbcConnection();
+            statement= connection.createStatement();
+            String sqlStr=String.format("SELECT %s FROM ppm_working_procedure where id=%s and DEL_FLAG=0  ORDER BY createTime",selectField,id);
+            resultSet=statement.executeQuery(sqlStr);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    procedureEntity.setId(resultSet.getInt("ID"));
+                    procedureEntity.setCreator(resultSet.getString("creator"));
+                    procedureEntity.setName(resultSet.getString("name"));
+                    procedureEntity.setCreateTime(resultSet.getDate("createTime"));
+                    procedureEntity.setUpdateTime(resultSet.getTime("updateTime"));
+                }
+            }
+        }
+
+        catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(connection,statement);
+        }
+        return procedureEntity;
+    }
     /**
      * 增加工序
      * @Author Fxiao

@@ -191,9 +191,13 @@ function bindBtns(){
 
     //特性form的提交按钮
     $("#characFormSubmit").click(function () {
+
+    	 if(examine()==1){
+             return false;
+         }
         var _data=$("#characForm").serialize();
         $.ajax({
-            url:"/Windchill/servlet/Navigation/characteristic?actionName=postCharac",
+            url:"/Windchill/servlet/Navigation/procedurelink?actionName=post",
             type:"get",
             data:_data,
             dataType:"json",
@@ -210,6 +214,38 @@ function bindBtns(){
             }
         })
     });
+
+
+    /**
+     * ln
+     * 检查表单
+     */
+    function examine() {
+        var numberInput=$("#characForm").find("input[name=coefficient]");
+        var hasError=false;
+        $.each(numberInput,function(i,n){
+            var num=$(n).val();
+            num=num==""?"0":num;
+            reg=/^\d+$/;
+            if(reg.test(num)){
+                $(n).closest("td").removeClass("has-error");
+                $(n).prop("title","");
+            }else{
+                $(n).closest("td").addClass("has-error");
+                $(n).prop("title","该数字框内必须是正整数");
+                hasError=true;
+            }
+        });
+        if(hasError){
+            alert("检查发现数字输入框有部分错误，具体错误原因，请将鼠标移至红色框上查看")
+            return 1;
+        }else{
+            return 0;
+        }
+    }
+
+
+
     //特性删除按钮
     $("#deleCharBtn").click(function () {
     	if(confirm('确定要删除吗')==true){	
@@ -223,9 +259,9 @@ function bindBtns(){
 	        if(type=="charac")
 	        	{
 	        	//删除特性
-	        	var _data={"actionName":"deleteCharac","id":characId};
+	        	var _data={"actionName":"deleteById","id":characId};
 		        $.ajax({
-		            url:"/Windchill/servlet/Navigation/characteristic",
+		            url:"/Windchill/servlet/Navigation/procedurelink",
 		            type:"get",
 		            data:_data,
 		            dataType:"json",
@@ -417,7 +453,7 @@ function getModelList(){
 //表单提交
 function templateSubmit(){
     $.ajax({
-        url:"/Windchill/servlet/Navigation/template?actionName=post",
+        url:"/Windchill/servlet/Navigation/templatelink?actionName=post",
         data:$("#modelForm").serialize(),
         type:"post",
         success:function (result) {

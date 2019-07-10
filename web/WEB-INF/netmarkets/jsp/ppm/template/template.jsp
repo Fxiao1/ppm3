@@ -154,7 +154,9 @@
                             <div class="form-group">
                                 <label  class="col-md-3 control-label">严酷度加权系数</label>
                                 <div class="col-md-7">
-                                    <input class="form-control" type="number" placeholder="点击输入" name="coefficient" >
+                                    <input class="form-control" type="number" placeholder="点击输入" name="coefficient"
+                                    onkeyup="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}" onafterpaste="if(this.value.length==1){this.value=this.value.replace(/[^1-9]/g,'')}else{this.value=this.value.replace(/\D/g,'')}"
+                                     >
                                 </div>
                             </div>
                         </form>

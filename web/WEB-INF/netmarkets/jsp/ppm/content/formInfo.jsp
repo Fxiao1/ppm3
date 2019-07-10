@@ -134,7 +134,7 @@
                 var orderNum=50;
                 $.each(procedureList,function (i,n) {
                     $.each(n.characList,function (j,m) {
-                        var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control"></td><td><input type="number"class="form-control"></td><td></td><td></td><td></td></tr>';
+                        var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control" min=0></td><td><input type="number"class="form-control" min=0></td><td></td><td></td><td></td></tr>';
                         var _tr=$(_trStr);
                         _tr.find("td:eq(0)").text(num++);
                         _tr.find("td:eq(1)").text(n.name);
@@ -444,7 +444,7 @@
                             </div>
                             <label class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-4">生产数量</label>
                             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8">
-                                <input type="number" class="form-control"  name="quantity">
+                                <input type="number" class="form-control"  name="quantity" min=0>
                             </div>
                         </div>
                         <div class="form-group">
