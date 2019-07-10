@@ -2,15 +2,12 @@ package ext.modular.procedure;
 
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
-import ext.modular.templatelink.TemplatelinkSer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
-import wt.org.WTPrincipal;
-import wt.session.SessionHelper;
 import wt.util.WTException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -79,15 +76,14 @@ public class ProcedureController2 {
                 jsonStr=ResultUtils.succ(null);
             }
         }else if("addToTemplate".equals(actionName)){
-        	
-            TemplatelinkSer templatelinkSer=new TemplatelinkSer();
+            /*TemplatelinkSer templatelinkSer=new TemplatelinkSer();
             String templateId=request.getParameter("templateId");
             String temp=request.getParameter("procedureId");
             String []procedureIds=temp.split(",");
             WTPrincipal currentUser = SessionHelper.manager.getPrincipal();
             String currentUserName=currentUser.getName();
             templatelinkSer.addTemplink(templateId,procedureIds,currentUserName);
-            ResultUtils.succ(null,"增加成功");
+            ResultUtils.succ(null,"增加成功");*/
         }else{
             log.info("其他分支");
             jsonStr=ResultUtils.error("actionName错误，actionName="+actionName);
