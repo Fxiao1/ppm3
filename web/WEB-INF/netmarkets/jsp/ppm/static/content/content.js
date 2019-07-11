@@ -115,7 +115,7 @@ function initTable(list,rebuild){
     var option={
         data:list,
         "columns": [
-            { "data": null ,
+            /*{ "data": null ,
                 "title":"型号代号",
                 "width":"8.3%",
                 "render":function () {
@@ -125,7 +125,7 @@ function initTable(list,rebuild){
                     $(cell).attr("title",modalCode);
                 }
 
-            },
+            },*/
             { "data": null ,"title":"产品型号","render":function () {
                     return modelName;
             }},
