@@ -1,7 +1,6 @@
 package ext.modular.templatelink;
 
 import ext.modular.common.ResultUtils;
-import ext.modular.procedure.ProcedureEntity;
 import ext.modular.procedure.ProcedureSer;
 import ext.modular.template.TemplateEntity;
 import ext.modular.template.TemplateSer;
@@ -23,20 +22,19 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.Connection;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 @Controller
 public class TemplatelinkController {
     private final Logger log= LoggerFactory.getLogger(this.getClass());
     private static Gson gson = new Gson();
-    private Connection connection=null;
-    
+
     public TemplatelinkController() {
     }
     @RequestMapping(method = { RequestMethod.GET, RequestMethod.POST,RequestMethod.HEAD })
-    public String processRequest(HttpServletRequest request, HttpServletResponse response) throws WTException{
+    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws WTException{
     	
     	TemplateSer templateSer=new TemplateSer();
     	
@@ -59,19 +57,20 @@ public class TemplatelinkController {
         //存储或修改模板的方法
         else if("post".equals(actionName)){
             TemplateEntity templateEntity=new TemplateEntity();
-            String templateId=request.getParameter("id");
-            log.info("templateId={}",templateId);
-            System.out.println("正在执行存储或修改模板的方法，接收到的参数templateId="+templateId);
-            templateEntity.setName(request.getParameter("name"));
+            String templateIdStr=request.getParameter("id");
+            log.info("templateIdStr={}",templateIdStr);
+            System.out.println("正在执行存储或修改模板的方法，接收到的参数templateId="+templateIdStr);
+            String templateName=request.getParameter("name");
+            templateEntity.setName(templateName);
             //准备工序数据
             ProcedureSer procedureSer=new ProcedureSer();
             //n
             TemplatelinkSer templateLink = new TemplatelinkSer();
-            String []procedureList=request.getParameterValues("procedure_id");
-            System.out.println("接收到的工序的列表为："+ Arrays.toString(procedureList));
-            int newTemplateId=0;
+            String []procedureIds=request.getParameterValues("procedure_id");
+            System.out.println("接收到的工序的列表为："+ Arrays.toString(procedureIds));
+            int templateId=0;
 
-            if(StringUtils.isEmpty(templateId)){
+            if(StringUtils.isEmpty(templateIdStr)){
                 //新增
                 templateEntity.setId(0);
                 TemplateEntity newTemplate=templateSer.add(templateEntity);
@@ -80,68 +79,30 @@ public class TemplatelinkController {
                 }else{
                     log.info("新增加的模板的id为：{}",newTemplate.getId());
                     System.out.println("新增加的模板的id为："+newTemplate.getId());
-                    newTemplateId=newTemplate.getId();
+                    templateId=newTemplate.getId();
                     jsonStr=ResultUtils.succ(null,"新增成功");
                 }
             }else{
                 //修改
-                templateEntity.setId(Integer.valueOf(templateId));
+                templateEntity.setId(Integer.valueOf(templateIdStr));
                 templateSer.update(templateEntity);
                 jsonStr=ResultUtils.succ(null,"修改成功");
-                newTemplateId=templateEntity.getId();
+                templateId=templateEntity.getId();
             }
             //添加工序到模板里去
-            log.info("newTemplateId={}",newTemplateId);
-            if(newTemplateId!=0&&procedureList!=null&&procedureList.length>0) {
+            log.info("templateId={}",templateId);
+            if(templateId!=0) {
                 WTPrincipal currentUser = SessionHelper.manager.getPrincipal();
                 String currentUserName=currentUser.getName();
-                //采用的是全部删除再全部重新存储的方式
-                templateLink.deleteTemplinkByTemplateId(newTemplateId);
-               // procedureSer.deleteFromeTemplate(newTemplateId);
-                //准备工序模板关系数据
-                for(int i =0;i<procedureList.length;i++)
-                {
-                TemplatelinkEntity temp = new TemplatelinkEntity();
-                temp.setCreator(currentUserName);
-                TemplateEntity template = new TemplateEntity();
-                template.setId(newTemplateId);
-                temp.setTemplateEntity(template);
-               ProcedureEntity proce = procedureSer.getProcedureById(Integer.parseInt(procedureList[i]));
-               temp.setProcedureEntity(proce);
-                
-                templateLink.addTemplink(temp);
-                //procedureSer.addIntoTemplate(newTemplateId,procedureList,currentUserName,connection);
+                //前台的工序数据
+                List<String> procedureIdList=new LinkedList<>();
+                if(procedureIds!=null){
+                    procedureIdList= new LinkedList<>(Arrays.asList(procedureIds));
                 }
+                ser.updateProceFromTemplate(procedureIdList,templateId,templateName,currentUserName,request);
             }
         }
-        /*//新增
-        else if("post".equals(actionName)){
-            TemplatelinkEntity entity=new TemplatelinkEntity();
-            String templinkId=request.getParameter("id");
-            entity.setCreator(request.getParameter("creator"));
-            entity.setCreateTime(new Date());
-            entity.setUpdateTime(new Date());
-            TemplateEntity templateEntity=new TemplateEntity();
-            templateEntity.setId(Integer.parseInt(request.getParameter("template_id")));
-            entity.setTemplateEntity(templateEntity);
-            ProcedureEntity procedureEntity=new ProcedureEntity();
-            procedureEntity.setId(Integer.parseInt(request.getParameter("tw_id")));
-            procedureEntity.setName(request.getParameter("tw_name"));
-            procedureEntity.setCreator(request.getParameter("tw_creator"));
-            entity.setProcedureEntity(procedureEntity);
-            entity.setPpm_order(Integer.parseInt(request.getParameter("ppm_order")));
-            log.info("TemplatelinkEntity:",entity.toString());
-            if(StringUtils.isEmpty(templinkId)){
-                entity.setId(0);
-                ser.addTemplink(entity);
-                jsonStr=ResultUtils.succ(null,"新增成功");
-            }else{
-                entity.setId(Integer.parseInt(templinkId));
-                ser.updateTemplink(entity);
-                jsonStr=ResultUtils.succ(null,"修改成功");
-            }
 
-        }*/
         //删除
         else if("delete".equals(actionName)){
             String id =(request.getParameter("id"));
@@ -174,7 +135,7 @@ public class TemplatelinkController {
             }
         }
         //添加工序集合到关系列表
-        else if("addToTemplate".equals(actionName)){
+        else if("updateProceFromTemplate".equals(actionName)){
         
         TemplatelinkSer templatelinkSer=new TemplatelinkSer();
         String jsonData = request.getParameter("templatelinkList");
@@ -198,7 +159,6 @@ public class TemplatelinkController {
         catch (IOException e){
             e.printStackTrace();
         }
-        return jsonStr;
     }
 }
 

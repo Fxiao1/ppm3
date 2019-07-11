@@ -47,7 +47,6 @@ public class ProcedureController2 {
             log.info("根据模板获得工序");
             String templateIdStr=request.getParameter("templateId");
             log.info("获取的templateIdStr={}",templateIdStr);
-            System.out.println("获取的templateIdStr="+templateIdStr);
             if(StringUtils.isEmpty(templateIdStr)){
                 jsonStr=ResultUtils.error("没有找到模板id");
                 System.out.println("没有找到模板id");
@@ -75,7 +74,7 @@ public class ProcedureController2 {
             	procedureSer.deleteProcedure(Integer.parseInt(id));
                 jsonStr=ResultUtils.succ(null);
             }
-        }else if("addToTemplate".equals(actionName)){
+        }else if("updateProceFromTemplate".equals(actionName)){
             /*TemplatelinkSer templatelinkSer=new TemplatelinkSer();
             String templateId=request.getParameter("templateId");
             String temp=request.getParameter("procedureId");

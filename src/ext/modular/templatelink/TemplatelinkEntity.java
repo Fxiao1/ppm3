@@ -8,7 +8,10 @@ public class TemplatelinkEntity extends BasicEntity {
     private TemplateEntity templateEntity;
     private ProcedureEntity procedureEntity;
     private int ppm_order;
-  
+    public TemplatelinkEntity(){
+        this.templateEntity=new TemplateEntity();
+        this.procedureEntity=new ProcedureEntity();
+    }
 
 	public TemplateEntity getTemplateEntity() {
         return templateEntity;

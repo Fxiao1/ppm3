@@ -1,6 +1,8 @@
 package ext.modular.procedurelink;
 
+import ext.modular.characteristic.CharacteristicEntity;
 import ext.modular.common.ConnectionUtil;
+import ext.modular.templatelink.TemplatelinkEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -79,10 +81,14 @@ public class ProcedureLinkSer {
                     procedureLink.setCreator(resultSet.getString("creator"));
                     procedureLink.setCreateTime(resultSet.getDate("createTime"));
                     procedureLink.setUpdateTime(resultSet.getTime("updateTime"));
-                    procedureLink.getTemplatelink().setId(resultSet.getInt("pro_link_id"));
-                    procedureLink.getCharacter().setName(resultSet.getString("chara_name"));
-                    procedureLink.getCharacter().setTotal(resultSet.getInt("total"));
-                    procedureLink.getCharacter().setCoefficient(resultSet.getInt("COEFFICIENT"));
+                    TemplatelinkEntity templatelink=new TemplatelinkEntity();
+                    templatelink.setId(resultSet.getInt("pro_link_id"));
+                    procedureLink.setTemplatelink(templatelink);
+                    CharacteristicEntity charac=new CharacteristicEntity();
+                    charac.setName(resultSet.getString("chara_name"));
+                    charac.setTotal(resultSet.getInt("total"));
+                    charac.setCoefficient(resultSet.getInt("COEFFICIENT"));
+                    procedureLink.setCharacter(charac);
                     procedureLink.setPpm_order(resultSet.getInt("ppm_order"));
                 }
             }
@@ -106,21 +112,7 @@ public class ProcedureLinkSer {
                     procedureId
             );
             ResultSet resultSet = statement.executeQuery(sqlStr);
-            if (resultSet != null) {
-                while (resultSet.next()) {
-                    ProcedureLinkEntity procudurelink = new ProcedureLinkEntity();
-                    procudurelink.setId(resultSet.getInt("ID"));
-                    procudurelink.setCreator(resultSet.getString("creator"));
-                    procudurelink.setCreateTime(resultSet.getDate("createTime"));
-                    procudurelink.setUpdateTime(resultSet.getTime("updateTime"));
-                    procudurelink.getTemplatelink().setId(resultSet.getInt("pro_link_id"));
-                    procudurelink.getCharacter().setName(resultSet.getString("chara_name"));
-                    procudurelink.getCharacter().setTotal(resultSet.getInt("total"));
-                    procudurelink.getCharacter().setCoefficient(resultSet.getInt("COEFFICIENT"));
-                    procudurelink.setPpm_order(resultSet.getInt("ppm_order"));
-                    list.add(procudurelink);
-                }
-            }
+            list=getListByResultSet(resultSet);
         } catch (SQLException e) {
             e.printStackTrace();
         }finally {
@@ -140,20 +132,7 @@ public class ProcedureLinkSer {
                     , templateId);
             log.debug("合成后的sql={}", sqlStr);
             ResultSet newResultSet = statement.executeQuery(sqlStr);
-            if (newResultSet != null) {
-                while (newResultSet.next()) {
-                    ProcedureLinkEntity procedurelinkEntity = new ProcedureLinkEntity();
-                    procedurelinkEntity.setId(newResultSet.getInt("id"));
-                    procedurelinkEntity.setCreateTime(newResultSet.getDate("createTime"));
-                    procedurelinkEntity.setUpdateTime(newResultSet.getDate("updateTime"));
-                    procedurelinkEntity.setCreator(newResultSet.getString("creator"));
-                    procedurelinkEntity.getCharacter().setName(newResultSet.getString("name"));
-                    procedurelinkEntity.getCharacter().setTotal(newResultSet.getInt("total"));
-                    procedurelinkEntity.getCharacter().setTotal(newResultSet.getInt("coefficient"));
-                    procedurelinkEntity.getTemplatelink().setId(newResultSet.getInt("PRO_LINK_ID"));
-                    list.add(procedurelinkEntity);
-                }
-            }
+            list=getListByResultSet(newResultSet);
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -215,7 +194,7 @@ public class ProcedureLinkSer {
             ps.setInt(3, procudurelink.getCharacter().getCoefficient());
             ps.setInt(4, procudurelink.getTemplatelink().getId());
             ps.setString(5, procudurelink.getCharacter().getName());
-            ps.setInt(6, procudurelink.getTemplatelink().getId());
+            ps.setInt(6, procudurelink.getId());
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -225,6 +204,34 @@ public class ProcedureLinkSer {
             ConnectionUtil.close(connection,ps);
         }
         return 0;
+    }
+
+
+    /**
+     * 结果集封装成对象list
+     * @Author Fxiao
+     * @Description
+     * @Date 21:15 2019/7/10
+     * @param resultSet
+     * @return java.util.List<ext.modular.procedurelink.ProcedureLinkEntity>
+     **/
+    private List<ProcedureLinkEntity> getListByResultSet(ResultSet resultSet) throws SQLException {
+        List<ProcedureLinkEntity>list=new LinkedList<>();
+        if (resultSet != null) {
+            while (resultSet.next()) {
+                ProcedureLinkEntity procedurelinkEntity = new ProcedureLinkEntity();
+                procedurelinkEntity.setId(resultSet.getInt("id"));
+                procedurelinkEntity.setCreateTime(resultSet.getDate("createTime"));
+                procedurelinkEntity.setUpdateTime(resultSet.getDate("updateTime"));
+                procedurelinkEntity.setCreator(resultSet.getString("creator"));
+                procedurelinkEntity.getCharacter().setName(resultSet.getString("name"));
+                procedurelinkEntity.getCharacter().setTotal(resultSet.getInt("total"));
+                procedurelinkEntity.getCharacter().setTotal(resultSet.getInt("coefficient"));
+                procedurelinkEntity.getTemplatelink().setId(resultSet.getInt("PRO_LINK_ID"));
+                list.add(procedurelinkEntity);
+            }
+        }
+        return list;
     }
 
     /**
@@ -248,6 +255,26 @@ public class ProcedureLinkSer {
         } catch (SQLException e) {
             e.printStackTrace();
         } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+    /**
+     * 根据工序id(模板工序关系的id)删除，也就是删除该工序下的所有特性
+     * @Description
+     * @Date 10:20 2019/7/11
+     * @param procedureLinkId 模板-工序关系数据的id
+     * @return void
+     **/
+    public void deleteByProcedure(int procedureLinkId){
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr ="DELETE FROM ppm_produce_charac_link where PRO_LINK_ID="+procedureLinkId;
+            log.info("正在执行："+sqlStr);
+            statement.executeQuery(sqlStr);
+        } catch (SQLException e) {
             e.printStackTrace();
         }
     }

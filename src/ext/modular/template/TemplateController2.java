@@ -58,17 +58,17 @@ public class TemplateController2 {
         //存储或修改模板的方法
         else if("post".equals(actionName)){
             TemplateEntity templateEntity=new TemplateEntity();
-            String templateId=request.getParameter("id");
-            log.info("templateId={}",templateId);
-            System.out.println("正在执行存储或修改模板的方法，接收到的参数templateId="+templateId);
+            String templateIdStr=request.getParameter("id");
+            log.info("templateIdStr={}",templateIdStr);
+            System.out.println("正在执行存储或修改模板的方法，接收到的参数templateId="+templateIdStr);
             templateEntity.setName(request.getParameter("name"));
             //准备工序数据
             ProcedureSer procedureSer=new ProcedureSer();
             String []procedureList=request.getParameterValues("procedure_id");
             System.out.println("接收到的工序的列表为："+ Arrays.toString(procedureList));
-            int newTemplateId=0;
+            int templateId=0;
 
-            if(StringUtils.isEmpty(templateId)){
+            if(StringUtils.isEmpty(templateIdStr)){
                 //新增
                 templateEntity.setId(0);
                 TemplateEntity newTemplate=templateSer.add(templateEntity);
@@ -77,24 +77,24 @@ public class TemplateController2 {
                 }else{
                     log.info("新增加的模板的id为：{}",newTemplate.getId());
                     System.out.println("新增加的模板的id为："+newTemplate.getId());
-                    newTemplateId=newTemplate.getId();
+                    templateId=newTemplate.getId();
                     jsonStr=ResultUtils.succ(null,"新增成功");
                 }
             }else{
                 //修改
-                templateEntity.setId(Integer.valueOf(templateId));
+                templateEntity.setId(Integer.valueOf(templateIdStr));
                 templateSer.update(templateEntity);
                 jsonStr=ResultUtils.succ(null,"修改成功");
-                newTemplateId=templateEntity.getId();
+                templateId=templateEntity.getId();
             }
             //添加工序到模板里去
-            log.info("newTemplateId={}",newTemplateId);
-            if(newTemplateId!=0&&procedureList!=null&&procedureList.length>0) {
+            log.info("templateId={}",templateId);
+            if(templateId!=0&&procedureList!=null&&procedureList.length>0) {
                 WTPrincipal currentUser = SessionHelper.manager.getPrincipal();
                 String currentUserName=currentUser.getName();
                 //采用的是全部删除再全部重新存储的方式
-                procedureSer.deleteFromeTemplate(newTemplateId);
-                procedureSer.addIntoTemplate(newTemplateId,procedureList,currentUserName,connection);
+                procedureSer.deleteFromeTemplate(templateId);
+                procedureSer.addIntoTemplate(templateId,procedureList,currentUserName,connection);
             }
         }else if("delete".equals(actionName)){
         	

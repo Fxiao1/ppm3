@@ -14,7 +14,12 @@ public class ProcedureLinkEntity extends BasicEntity{
 	private TemplatelinkEntity templatelink;
 	private CharacteristicEntity character;
 	private int ppm_order;
-	
+
+	public ProcedureLinkEntity(){
+		this.templatelink=new TemplatelinkEntity();
+		this.character=new CharacteristicEntity();
+	}
+
 	
 	public TemplatelinkEntity getTemplatelink() {
 		return templatelink;
@@ -34,7 +39,7 @@ public class ProcedureLinkEntity extends BasicEntity{
 	public void setPpm_order(int ppm_order) {
 		this.ppm_order = ppm_order;
 	}
-	
-	
+
+
 
 }

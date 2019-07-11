@@ -23,9 +23,8 @@ import java.util.List;
 @Service
 public class CharacteristicSer {
     private final Logger log= LoggerFactory.getLogger(this.getClass());
-    private String selectField="id,createTime,updateTime,creator,name,tw_id,total,coefficient,ppm_order";
     /**
-     * 获取工序检验特性列表
+     * 获取工序检验特性列表。2019年7月10日15:33:59重写该方法，将从工序-特性关系表中取数据
      * @Author Fxiao
      * @Description
      * @Date  2019/6/10
@@ -39,8 +38,8 @@ public class CharacteristicSer {
         List<CharacteristicEntity> characList=new LinkedList<CharacteristicEntity>();
         try{
             statement=conn.createStatement();
-            String sqlStr=String.format("SELECT %s FROM ppm_characteristic WHERE tw_id=%s and DEL_FLAG=0 ORDER BY PPM_ORDER "
-                    ,selectField,procedureId);
+            String sqlStr=String.format("SELECT * FROM ppm_produce_charac_link WHERE PRO_LINK_ID=%s AND del_flag=0 "
+                    ,procedureId);
             log.info("ext.modular.characteristic.CharacteristicSer.getCharacList正在执行的sql={}:",sqlStr);
             ResultSet resultSet=statement.executeQuery(sqlStr);
             if(resultSet!=null){
@@ -48,7 +47,7 @@ public class CharacteristicSer {
                     CharacteristicEntity CharacteristicEntity=new CharacteristicEntity();
                     CharacteristicEntity.setId(resultSet.getInt("ID"));
                     CharacteristicEntity.setCreator(resultSet.getString("creator"));
-                    CharacteristicEntity.setName(resultSet.getString("name"));
+                    CharacteristicEntity.setName(resultSet.getString("chara_name"));
                     CharacteristicEntity.setCreateTime(resultSet.getDate("createTime"));
                     CharacteristicEntity.setUpdateTime(resultSet.getTime("updateTime"));
                     CharacteristicEntity.setTotal(resultSet.getInt("total"));

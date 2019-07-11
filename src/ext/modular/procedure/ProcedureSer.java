@@ -347,13 +347,22 @@ public class ProcedureSer {
             ConnectionUtil.close(connection,statement);
         }
     }
+    /**
+     * 重写该方法，将从关系表中去该工序，而不是从工序表
+     * @Author Fxiao
+     * @Description
+     * @Date 15:32 2019/7/10
+     * @param templateId 模板id
+     * @param conn 数据库连接
+     * @return java.util.List<ext.modular.procedure.ProcedureEntity>
+     **/
     public List<ProcedureEntity> getByTemplate(int templateId,Connection conn){
         List<ProcedureEntity> list=new LinkedList<>();
         Statement statement=null;
         try{
             statement=conn.createStatement();
             String sqlStr=String.format(
-                    "SELECT a.* FROM PPM_WORKING_PROCEDURE a,PPM_TEMPLATE_WORK_LINK b WHERE a.ID=b.TW_ID AND b.TEMPLATE_ID=%s and a.DEL_FLAG=0"
+                    "SELECT * FROM PPM_TEMPLATE_WORK_LINK where template_id=%s AND DEL_FLAG=0"
                     ,templateId);
             log.debug("合成后的sql={}",sqlStr);
             ResultSet newResultSet=statement.executeQuery(sqlStr);
@@ -364,8 +373,8 @@ public class ProcedureSer {
                     procedureEntity.setCreateTime(newResultSet.getDate("createTime"));
                     procedureEntity.setUpdateTime(newResultSet.getDate("updateTime"));
                     procedureEntity.setCreator(newResultSet.getString("creator"));
-                    procedureEntity.setName(newResultSet.getString("name"));
-
+                    procedureEntity.setName(newResultSet.getString("tw_name"));
+                    //获取工序中的特性
                     CharacteristicSer characteristicSer=new CharacteristicSer();
                     List<CharacteristicEntity> characList=characteristicSer.getCharacList(procedureEntity.getId(),conn);
                     procedureEntity.setCharacList(characList);

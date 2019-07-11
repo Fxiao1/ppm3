@@ -79,6 +79,7 @@
 
                     <div class="modal-body">
                         <form class="form-horizontal" id="modelForm">
+                            <input type="hidden" name="currentOrder" value="100">
                             <div class="form-group">
                                 <label  class="col-md-3 control-label">模板名</label>
                                 <div class="col-md-7">

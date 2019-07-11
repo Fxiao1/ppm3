@@ -1,17 +1,14 @@
 package ext.modular.procedurelink;
 
-import com.ptc.windchill.jdbc.client.cci.ResultUtil;
-import ext.modular.characteristic.CharacteristicEntity;
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
-import ext.modular.procedure.ProcedureEntity;
-import ext.modular.templatelink.TemplatelinkEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import wt.session.SessionHelper;
 import wt.util.WTException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +34,7 @@ public class ProcedureLinkController {
     }
 
     @RequestMapping(method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.HEAD})
-    public String processRequest(HttpServletRequest request, HttpServletResponse response) throws WTException {
+    public void processRequest(HttpServletRequest request, HttpServletResponse response) throws WTException {
         connection = ConnectionUtil.getConnection();
         ProcedureLinkSer ser = new ProcedureLinkSer();
 
@@ -90,39 +87,36 @@ public class ProcedureLinkController {
         }
         //修改检验特性与工序关系
         else if ("post".equals(actionName)) {
-            ProcedureLinkEntity procedureLinkEntity = new ProcedureLinkEntity();
+            ProcedureLinkEntity procedureLink = new ProcedureLinkEntity();
             String id = request.getParameter("id");
             String proLinkId = request.getParameter("twId");
             String chara_name = request.getParameter("name");
             String coffucient = request.getParameter("coefficient");
             String total = request.getParameter("total");
-            log.info("pro_link_id={},chara_name={},coffucient={},total={}"
-                    , proLinkId, chara_name, coffucient, total);
+            log.info("id={},pro_link_id={},chara_name={},coffucient={},total={}"
+                    ,id, proLinkId, chara_name, coffucient, total);
             //准备检验特性关系数据
-            CharacteristicEntity character = new CharacteristicEntity();
-            character.setName(chara_name);
-            character.setCoefficient(Integer.parseInt(coffucient));
-            character.setTotal(Integer.parseInt(total));
+            procedureLink.getCharacter().setName(chara_name);
+            procedureLink.getCharacter().setCoefficient(Integer.parseInt(coffucient));
+            procedureLink.getCharacter().setTotal(Integer.parseInt(total));
+            procedureLink.getTemplatelink().setId(Integer.parseInt(proLinkId));
 
-            TemplatelinkEntity templatelinkEntity = new TemplatelinkEntity();
-            templatelinkEntity.setId(Integer.parseInt(proLinkId));
-
-            procedureLinkEntity.setCharacter(character);
-            procedureLinkEntity.setTemplatelink(templatelinkEntity);
+            //创建人
+            wt.org.WTPrincipal current = SessionHelper.manager.getPrincipal();
+            procedureLink.setCreator(current.getName());
             //n
             if (StringUtils.isEmpty(id)) {
                 //新增
-                ser.addProcedureLink(procedureLinkEntity);
+                ser.addProcedureLink(procedureLink);
                 jsonStr = ResultUtils.succ(null, "新增成功");
             } else {
-                procedureLinkEntity.setId(Integer.parseInt(id));
-                int updateRow=ser.updateProcedureLink(procedureLinkEntity);
+                procedureLink.setId(Integer.parseInt(id));
+                int updateRow=ser.updateProcedureLink(procedureLink);
                 if(updateRow==0){
                     jsonStr = ResultUtils.error("修改失败，具体原因请查看日志");
                 }else{
                     jsonStr = ResultUtils.succ(null, "修改成功");
                 }
-
             }
         }
         //根据检验特性关系id删除
@@ -149,6 +143,5 @@ public class ProcedureLinkController {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return jsonStr;
     }
 }

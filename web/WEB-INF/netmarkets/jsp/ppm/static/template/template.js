@@ -65,46 +65,61 @@ function bindBtns(){
         }
         var _div=$("<div></div>").addClass("form-inline");
         var _input1=$('<input type="text" disabled="disabled" class="form-control " >').val(selected.text());
-        var _input2=$('<input type="hidden" name="procedure_id">').val($(this).prev().val());
+        //工序id
+        var currentProcedureId=$(this).prev().val();
+        var _input2=$('<input type="hidden" name="procedure_id">').val(currentProcedureId);
+        //工序排序
+        var currentOrderStr=$("#modelForm").find("input[name=currentOrder]").val();
+        var currentOrder=parseInt(currentOrderStr);
+        var nextOrder=++currentOrder;
+        $("#modelForm").find("input[name=currentOrder]").val(nextOrder);
+        var _input3=$('<input type="hidden">').val(nextOrder).prop("name",currentProcedureId+"_order");
+        //工序名
+        var procedureName=$("#gongxu").find("option:selected").text();
+        var _input4=$('<input type="hidden">').val(procedureName).prop("name",currentProcedureId+"_name");
+        //删除按钮
         var closeBtn='<button onclick="removeProce(this)" type="button" class="myClose">&nbsp;&times;&nbsp;</button>';
-        _div.append(_input1).append(_input2).append(closeBtn);
+        _div.append(_input1).append(_input2).append(closeBtn).append(_input3).append(_input4);
         $("#gongxuContent").append(_div);
         //清除这个下拉框选项
         selected.remove();
     });
     //"删除模板" 按钮
     $("#deleTempBtn").click(function(){
-		 if(confirm('确定要删除吗')==true){
+
 				var deleLi=$("#modelList").find("li.active");
 				
 				if(deleLi.length==1){
-					var _id=deleLi.prop("id");
-					var _data={"actionName":"delete"};
-					_data.id=_id;
-					$.ajax({
-						url:"/Windchill/servlet/Navigation/template",
-						data:_data,
-						type:"get",
-						dataType:"json",
-						success:function (result) {
-							if(!result.success){
-								alert(result.message);
+					if(confirm('确定要删除吗')==true){
+						var _id=deleLi.prop("id");
+						var _data={"actionName":"delete"};
+						_data.id=_id;
+						$.ajax({
+							url:"/Windchill/servlet/Navigation/template",
+							data:_data,
+							type:"get",
+							dataType:"json",
+							success:function (result) {
+								if(!result.success){
+									alert(result.message);
+								}
+								getModelList();
+							},
+							error:function (a,b,c,d) {
+								alert("发生错误，删除失败");
 							}
-							getModelList();
-						},
-						error:function (a,b,c,d) {
-							alert("发生错误，删除失败");
-						}
-					})
+						})
+					 }else{
+
+			    	       return false;
+
+			    	    }
 				}else{
 					alert("请选中一条模板");
 				}
-		 }else{
 
-    	       return false;
-
-    	    }
     });
+
     //修改模板按钮
     $("#modifyTempBtn").click(function () {
         var seleLi=$("#modelList").find("li.active");
@@ -170,12 +185,12 @@ function bindBtns(){
         $("#characForm").find("input[name=id]").val(characId);
 
         $.ajax({
-            url:"/Windchill/servlet/Navigation/characteristic?actionName=getCharac&id="+characId,
+            url:"/Windchill/servlet/Navigation/procedurelink?actionName=getById&id="+characId,
             type:"get",
             dataType:"json",
             success:function (result) {
                 if(result.success){
-                    var charac=result.data;
+                    var charac=result.data.character;
                     $("#characForm").find("input[name=name]").val(charac.name);
                     $("#characForm").find("input[name=total]").val(charac.total);
                     $("#characForm").find("input[name=coefficient]").val(charac.coefficient);
@@ -248,7 +263,13 @@ function bindBtns(){
 
     //特性删除按钮
     $("#deleCharBtn").click(function () {
-    	if(confirm('确定要删除吗')==true){	
+		var currentTr=$("#procedureList").find("tr.info");
+        if(currentTr.length==0){
+            alert("请选中一条特性数据");
+            return false;
+        }
+
+    	if(confirm('确定要删除吗')==true){
 	        var procedureId=$("#procedureList").find("tr.info").prop("id");
 	        var tempId=$("#modelList").find("li.active").prop("id");
 	       // alert(procedureId)
@@ -281,7 +302,7 @@ function bindBtns(){
 	        else if(type=="procedure")
 	        	{
 	        	//删除工序
-	        	var _data={"actionName":"deleteById","tempId":tempId,"id":procedureId};
+	        	/*var _data={"actionName":"deleteById","tempId":tempId,"id":procedureId};
 		        $.ajax({
 		            url:"/Windchill/servlet/Navigation/templatelink",
 		            type:"get",
@@ -297,7 +318,8 @@ function bindBtns(){
 		            error:function (a, b, c, d) {
 		                alert(b);
 		            }
-		        });
+		        });*/
+				alert("请选中一条特性数据");
 	        	}
 	        
     	 }else{
@@ -363,9 +385,20 @@ function getProceByTemplate(templateId) {
                     var _div=$("<div></div>").addClass("form-inline");
                     var _input1=$('<input type="text" disabled="disabled" class="form-control " >')
                         .val(n.name);
-                    var _input2=$('<input type="hidden" name="procedure_id">').val(n.id);
+                    //工序id
+                    var currentProcedureId=n.id;
+                    var _input2=$('<input type="hidden" name="procedure_id">').val(currentProcedureId);
+                    //工序排序
+                    var currentOrderStr=$("#modelForm").find("input[name=currentOrder]").val();
+                    var currentOrder=parseInt(currentOrderStr);
+                    var nextOrder=++currentOrder;
+                    $("#modelForm").find("input[name=currentOrder]").val(nextOrder);
+                    var _input3=$('<input type="hidden">').val(nextOrder).prop("name",currentProcedureId+"_order");
+                    //工序名
+                    var _input4=$('<input type="hidden">').val(n.name).prop("name",currentProcedureId+"_name");
+                    //删除按钮
                     var closeBtn='<button onclick="removeProce(this)" type="button" class="myClose">&nbsp;&times;&nbsp;</button>';
-                    _div.append(_input1).append(_input2).append(closeBtn);
+                    _div.append(_input1).append(_input2).append(closeBtn).append(_input3).append(_input4);
                     $("#gongxuContent").append(_div);
                     //然后清除下拉框里面的这条选项
                     $("#gongxu").find("option[value="+n.id+"]").remove();
@@ -531,7 +564,7 @@ function bindEvent() {
     $("#addModel").on("hidden.bs.modal",function () {
         $("#gongxuContent").html("");
         $("#modelForm").get(0).reset();
-        $("#modelForm").find("input[type=hidden]").val("");
+        $("#modelForm").find("input[type=hidden]").not("input[name=currentOrder]").val("");
     });
 
     //特性模态框出来时候需要做的事情
