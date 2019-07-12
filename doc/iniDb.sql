@@ -1,3 +1,7 @@
+/*创建序列*/
+CREATE SEQUENCE ppm_seq INCREMENT BY 1 START WITH 1000 ;
+CREATE SEQUENCE ppm_order_num_seq INCREMENT BY 1 START WITH 100 MAXVALUE 99999 CYCLE;
+/*开始删除旧表*/
 /*9工序-特性关系表*/
 declare
       num   number;
@@ -82,14 +86,7 @@ end;
 
 
 
-
-
-
-
-
-
-
-
+/*开始创建新表*/
 
   CREATE TABLE "PPM_TEMPLATE" 
    (	"ID" NUMBER(7,0) NOT NULL ENABLE, 
