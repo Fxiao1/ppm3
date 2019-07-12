@@ -123,29 +123,17 @@ public class FormController {
         else if ("update".equals(actionName)) {
             String jsonData = request.getParameter("formList");
             //json串转换为List<FormEntity>
-            List<FormEntity> formEntityList = gson.fromJson(jsonData, new TypeToken<List<FormEntity>>() {
-            }.getType());
-            int productId=formEntityList.get(0).getProductId();
-            int logo=formEntityList.get(0).getLogo();
-            log.info("当前正在执行ext.modular.form.FormController类的update方法，接收到的产品id={},表单标识={}",productId,logo
-            );
-            if (StringUtils.isEmpty(productId)) {
-                jsonStr = ResultUtils.error("缺少产品id");
-            } else {
-                service.delete(logo);
+            int logo=Integer.parseInt(request.getParameter("logo"));
+            service.delete(logo);
+            if(jsonData!=null){
+                List<FormEntity> formEntityList = gson.fromJson(jsonData, new TypeToken<List<FormEntity>>() {
+                }.getType());
+                log.info("当前正在执行ext.modular.form.FormController类的update方法，表单标识={}",logo);
                 for (FormEntity form : formEntityList) {
                     service.add(form,connection);
                 }
-                jsonStr=ResultUtils.succ(null,"表单修改成功");
-//                log.info("表单标识logo为{},产品id ", logo);
-//                List<FormEntity> formList = new LinkedList<FormEntity>();
-//                formList = service.getFormList(logo);
-//                jsonStr = ResultUtils.succ(formList, "查询表单列表成功");
-//                log.info("根据标识查询到表单listformList为{}", jsonStr);
-//                //根据表单标识删除表单列表
-//                service.delete(logo);
-//                log.info("根据表单标识删除表单成功");
             }
+            jsonStr=ResultUtils.succ(null,"表单修改成功");
         }
         //根据表单标识删除整个表单数据
         else if ("delete".equals(actionName)) {

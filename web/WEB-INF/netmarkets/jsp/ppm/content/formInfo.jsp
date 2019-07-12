@@ -169,7 +169,7 @@
                 var formLogo=$("#hideInfo").find("input[name=formLogo]").val();
                 var _url="";
                 if(formLogo){
-                    _url="/Windchill/servlet/Navigation/form?actionName=update";
+                    _url="/Windchill/servlet/Navigation/form?actionName=update&logo="+formLogo;
                 }else{
                     _url="/Windchill/servlet/Navigation/form?actionName=post";
                 }
