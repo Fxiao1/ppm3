@@ -3,6 +3,7 @@ package ext.modular.procedure;
 import ext.modular.characteristic.CharacteristicEntity;
 import ext.modular.characteristic.CharacteristicSer;
 import ext.modular.common.ConnectionUtil;
+import ext.modular.templatelink.TemplatelinkSer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -11,7 +12,6 @@ import wt.session.SessionHelper;
 import wt.util.WTException;
 
 import java.sql.*;
-import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -201,74 +201,26 @@ public class ProcedureSer {
         return null;
     }
 
-    /*批量增加工序到指定模板下*/
-    /*public void addProcedure(List<ProcedureEntity> procedureList,int templateId){
-        Connection connection=null;
-        PreparedStatement ps=null;
-        TemplatelinkSer templatelinkSer=new TemplatelinkSer();
-        try{
-            connection=ConnectionUtil.getJdbcConnection();
-            ProcedureEntity procedureEntity;
-            for (int i = 0; i < procedureList.size(); i++) {
-                procedureEntity=procedureList.get(i);
-                String sqlStr=String.format("INSERT INTO ppm_working_procedure(%s) VALUES(ppm_seq.nextval,'%s','%s')");
-                ps=connection.prepareStatement(sqlStr);
-                ps.setString(1,procedureEntity.getCreator());
-                ps.setString(2,procedureEntity.getName());
-                ps.executeUpdate();
-                ResultSet resultSet=ps.getGeneratedKeys();
-                TemplatelinkEntity templatelinkEntity=new TemplatelinkEntity();
-                ProcedureEntity procedureEntity1=new ProcedureEntity();
-                TemplateEntity templateEntity=new TemplateEntity();
-                if(resultSet!=null){
-                    resultSet.next();
-                    ---templateId=resultSet.getInt(1);
-                    templatelinkSer.addTemplink();
-
-                }
-            }
-        }
-        catch (ClassNotFoundException e){
-            e.printStackTrace();
-        }
-        catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }*/
-
-    //业务逻辑需要改变，如果是添加关系就单纯的添加关系，别还弄个删除
+    /**
+     * 给模板下添加工序（兼容旧调用接口）
+     * @Author Fxiao
+     * @Description
+     * @Date 10:20 2019/7/12
+     * @param templateId 模板id
+     * @param procedureIds 工序表已有数据的id数组
+     * @param currentUser 当前用户名
+     * @param connection 连接，可以传null
+     * @return void
+     **/
     public void addIntoTemplate(int templateId,String[]procedureIds,String currentUser,Connection connection){
-        Connection connection2=ConnectionUtil.getConnection();
-        Statement statement=null;
-        try{
-            statement=connection2.createStatement();
-            log.info("procedureIds={}", Arrays.toString(procedureIds));
-            String sqlStr;
-            String seleStr;
-            ResultSet rs=null;
-            //循环插入关系数据
-            for (int i = 0; i <procedureIds.length; i++) {
-                seleStr=String.format("SELECT id FROM PPM_TEMPLATE_WORK_LINK WHERE TEMPLATE_ID=%s AND TW_ID=%s",
-                        templateId,procedureIds[i]);
-                rs=statement.executeQuery(seleStr);
-                if(rs!=null&&rs.next()){
-                    //当前关系已存在，进行下一轮存储
-                    continue;
-                }
-                sqlStr=String.format(
-                        "INSERT INTO PPM_TEMPLATE_WORK_LINK(id,creator,template_id,tw_id,ppm_order) " +
-                                "VALUES (ppm_seq.nextval,'%s',%s,%s,ppm_order_num_seq.nextval)",
-                        currentUser,templateId,procedureIds[i]);
-                log.info("插入id为“{}”的工序时的sql为“{}”",procedureIds[i],sqlStr);
-                statement.execute(sqlStr);
-            }
+        int []intIds=new int[procedureIds.length];
+        for (int i = 0; i < procedureIds.length; i++) {
+            intIds[i]=Integer.parseInt(procedureIds[i]);
         }
-        catch (SQLException e) {
-            e.printStackTrace();
-        } finally {
-            ConnectionUtil.close(connection2,statement);
-        }
+        TemplatelinkSer templatelinkSer=new TemplatelinkSer();
+        templatelinkSer.addToTemplate(templateId,intIds,currentUser);
     }
+
     /**
      * 删除指定模板中的所有工序
      * @Author Fxiao

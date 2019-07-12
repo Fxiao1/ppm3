@@ -59,10 +59,17 @@ function bindBtns(){
     });
     //"选择工序"按钮
     $("#selectProcedureBtn").click(function () {
-        var selected=$(this).prev().children("option:selected");
+        var selected=$("#gongxu").find("option:selected");
         if(selected.length==0){
             return false;
         }
+        //根据名字再去重
+        var procedureName=selected.text();
+        var _length=$("#gongxuContent").find("input[value="+procedureName+"]").length;
+        if(_length>0){
+            return false;
+        }
+
         var _div=$("<div></div>").addClass("form-inline");
         var _input1=$('<input type="text" disabled="disabled" class="form-control " >').val(selected.text());
         //工序id
@@ -75,7 +82,7 @@ function bindBtns(){
         $("#modelForm").find("input[name=currentOrder]").val(nextOrder);
         var _input3=$('<input type="hidden">').val(nextOrder).prop("name",currentProcedureId+"_order");
         //工序名
-        var procedureName=$("#gongxu").find("option:selected").text();
+
         var _input4=$('<input type="hidden">').val(procedureName).prop("name",currentProcedureId+"_name");
         //删除按钮
         var closeBtn='<button onclick="removeProce(this)" type="button" class="myClose">&nbsp;&times;&nbsp;</button>';

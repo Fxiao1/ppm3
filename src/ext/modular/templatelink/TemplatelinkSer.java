@@ -1,6 +1,7 @@
 package ext.modular.templatelink;
 
 import ext.modular.common.ConnectionUtil;
+import ext.modular.procedure.ProcedureEntity;
 import ext.modular.procedure.ProcedureSer;
 import ext.modular.procedurelink.ProcedureLinkSer;
 import org.slf4j.Logger;
@@ -74,7 +75,10 @@ public class TemplatelinkSer {
                         templateId,proceId
                     );
             ResultSet resultSet = statement.executeQuery(sqlStr);
-            templatelinkEntity = getListByResultSet(resultSet).get(0);
+            List<TemplatelinkEntity>list=getListByResultSet(resultSet);
+            if(list.size()>0){
+                templatelinkEntity =list.get(0);
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         } finally {
@@ -192,6 +196,50 @@ public class TemplatelinkSer {
             e.printStackTrace();
         }
     }
+
+    /**
+     * 给模板下添加工序
+     * @Author Fxiao
+     * @Description
+     * @Date 10:10 2019/7/12
+     * @param templateId 模板id
+     * @param procedureIds 工序id数组（工序表里的真实id）
+     * @param currentUser 当前用户
+     * @return void
+     **/
+    public void addToTemplate(int templateId,int[]procedureIds,String currentUser){
+        Connection connection=null;
+        PreparedStatement ps=null;
+        connection=ConnectionUtil.getConnection();
+        String sql="INSERT INTO PPM_TEMPLATE_WORK_LINK(ID,CREATOR,TEMPLATE_ID,TW_ID,TW_NAME,TW_CREATOR,PPM_ORDER)" +
+                "values(ppm_seq.nextval,?,?,?,?,?,ppm_order_num_seq.nextval)";
+        ProcedureSer procedureSer=new ProcedureSer();
+
+        try {
+            for (int i = 0; i < procedureIds.length; i++) {
+                //先去重
+                TemplatelinkEntity templink=get(templateId,procedureIds[i]);
+                if(templink.getId()>0){
+                    //说明已有数据了
+                    continue;
+                }
+                ps=connection.prepareStatement(sql);
+                ps.setString(1,currentUser);
+                ps.setInt(2,templateId);
+                ps.setInt(3,procedureIds[i]);
+                ProcedureEntity procedure=procedureSer.getProcedureById(procedureIds[i]);
+                ps.setString(4,procedure.getName());
+                ps.setString(5,procedure.getCreator());
+                int updateRow=ps.executeUpdate();
+                log.info("i={},updateRow={}",i,updateRow);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally{
+            ConnectionUtil.close(connection,ps);
+        }
+    }
+
     /**
      * 更新模板下的工序
      * @Description
