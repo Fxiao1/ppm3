@@ -173,7 +173,7 @@
                 }else{
                     _url="/Windchill/servlet/Navigation/form?actionName=post";
                 }
-
+                var characQuantityIsZero=false;
                 $.each(charaList,function (i, n) {
                     var chrarc=$(n);
                     var itemData={};
@@ -185,6 +185,10 @@
                     itemData.twId=chrarc.find("td:eq(5)").text();
                     itemData.procedureName=chrarc.find("td:eq(1)").text();
                     itemData.characName=chrarc.find("td:eq(2)").text();
+                    if(chrarc.find("td:eq(3)>input").val()=="0"){
+                        characQuantityIsZero=true;
+                        return false;
+                    }
                     itemData.characQuantity=chrarc.find("td:eq(3)>input").val();
                     itemData.kj=chrarc.find("td:eq(4)>input").val();
                     itemData.ppmOrder=chrarc.find("td:eq(7)").text();
@@ -193,6 +197,10 @@
                     }
                     _data.push(itemData);
                 });
+                if(characQuantityIsZero){
+                    alert("检验特性数量均不能为0！");
+                    return false;
+                }
                 var dataJsonStr=JSON.stringify(_data);
                 $.ajax({
                     url:_url,
