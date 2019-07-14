@@ -18,6 +18,9 @@
     <script type="text/javascript" src="../static/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="../static/dataTables.bootstrap.min.js"></script>
     <script type="text/javascript" src="../static/content/content.js"></script>
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+    </script>
     <script type="text/javascript">
 
         $(function() {
@@ -127,13 +130,15 @@
                 //生产数量
                 var quantity=parseInt($("#formInfo").find("span[name=quantity]").text());
                 //产品总数
-                var num=0;
-                $.each($("#instanceDataTable3").find("input.productCount"),function (i, n) {
+                var temp=$(this).val();
+                var currentNum=temp==""?0:parseInt(temp);
+                // var countNum=0;
+                /*$.each($("#instanceDataTable3").find("input.productCount"),function (i, n) {
                     var temp=$(n).val();
-                    num+=temp==""?0:parseInt(temp);
-                })
-                if(num>quantity){
-                    alert("产品数之和不能大于生产数量！生产数量="+quantity+"，当前产品总数="+num);
+                    countNum+=temp==""?0:parseInt(temp);
+                })*/
+                if(currentNum>quantity){
+                    alert("填写的产品数不能大于生产数量！生产数量="+quantity+"，当前产品数="+currentNum);
                     $(this).val(0);
                 };
 
@@ -270,7 +275,12 @@
             var formItem=resultData[0];
             //放入一些信息，在提交的时候需要传入后台
             $("#form1").find("input[name=quantity]").val(formItem.quantity);
-            //$("#form1").find("input[name=quantity]").val(formItem.quantity);
+            //产品批次
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"batch","value":formItem.batch}));
+            //类别
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"category","value":formItem.category}));
+            //整机、模件、线缆名称
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"moduleName","value":formItem.moduleName}));
 
             //封装数据成为一个对象，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}

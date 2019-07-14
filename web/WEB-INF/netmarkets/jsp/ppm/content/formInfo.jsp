@@ -12,6 +12,9 @@
         <link rel="stylesheet" type="text/css" href="../static/bootstrap.css"/>
         <script type="text/javascript" src="../static/jquery.min.js"></script>
         <script type="text/javascript" src="../static/bootstrap.js"></script>
+        <script type="text/javascript"
+                src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+        </script>
         <script type="text/javascript" >
             $(function () {
                 //纠错，隐藏域的一些基础信息的纠错

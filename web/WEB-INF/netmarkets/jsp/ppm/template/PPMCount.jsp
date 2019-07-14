@@ -8,7 +8,9 @@
     <script type="text/javascript" src="../static/bootstrap.js"></script>
     <script type="text/javascript"
             src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/My97DatePicker/My97DatePicker/WdatePicker.js"></script>
-
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+    </script>
     <style type="text/css">
 
         .row {

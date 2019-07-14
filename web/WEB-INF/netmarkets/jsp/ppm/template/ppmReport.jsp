@@ -12,6 +12,9 @@
             src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/echarts.min.js"></script>
     <script type="text/javascript"
             src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/My97DatePicker/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+    </script>
     <script type="text/javascript">
 
 
@@ -297,8 +300,8 @@
         </div>
         <div class="col-md-3">
             <div class="btn-group">
-                <input class="btn btn-info" id="statisticsBtn" type="button" value="统计"/>
-                <input class="btn btn-info" id="exportBtn" type="button" value="导出"/>
+                <input class="blist x-btn-text" id="statisticsBtn" type="button" value="统计"/>
+                <input class="blist x-btn-text" id="exportBtn" type="button" value="导出"/>
             </div>
         </div>
     </div>

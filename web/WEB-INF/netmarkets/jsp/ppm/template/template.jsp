@@ -21,7 +21,9 @@
 	<link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/dataTables.bootstrap.min.css"/>
 	<script type="text/javascript" src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/dataTables.bootstrap.min.js"></script>
-
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+    </script>
 
 </head>
 <body>

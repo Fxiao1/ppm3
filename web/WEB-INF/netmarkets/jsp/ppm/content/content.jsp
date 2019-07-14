@@ -25,6 +25,9 @@
             color: #FFFFFF;
         }
     </style>
+    <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
+    </script>
 </head>
 <body>
 <div class="hide" id="info" >
