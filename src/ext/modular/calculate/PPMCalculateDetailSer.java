@@ -36,44 +36,23 @@ public class PPMCalculateDetailSer {
      * @return
      */
     public List<String> getProcedureNameList(Connection connection,String startDate, String endDate){
-
         List<String> procedureNameList = new LinkedList<String>();
         try {
-
- //          connection = ConnectionUtil.getJdbcConnection();
-
-
            statement=connection.createStatement();
             String sqlStr=String.format("SELECT procedure_Name FROM ppm_data_instance where createTime " +
                     "between to_date('%s','yyyy-MM-dd') and to_date('%s','yyyy-MM-dd') GROUP BY procedure_Name",startDate,endDate);
-       //     select * from ppm_data_instance where createTime between to_date('2019/06/01 12:00:00','yyyy/MM/dd hh24:mi:ss') and to_date('2019/07/01 12:22:22','yyyy/MM/dd hh24:mi:ss');
-/*            String sql = "SELECT * FROM ppm_data_instance where createTime" +
-                    " between to_date( '"+ startDate + "','yyyy/MM/dd hh24:mi:ss') and to_date('"+ endDate + "','yyyy/MM/dd hh24:mi:ss')";*/
-//            PreparedStatement ps = connection.prepareStatement(sql);
-
-//            ps.setString(1,startDate);
-//            ps.setString(2,endDate);
           resultSet=statement.executeQuery(sqlStr);
-           // resultSet = ps.executeQuery();
             log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
-//            System.out.println(+resultSet.getRow());
             if(resultSet!=null){
-
                 while (resultSet.next()){
-
                     String name = resultSet.getString("procedure_Name");//工序名称
-
                     procedureNameList.add(name);
                 }
-
                 System.out.println("service>>>>procedureNameList size() === " + procedureNameList.size());
             }
-
-
         } catch (SQLException e) {
             e.printStackTrace();
         }
-
         return procedureNameList;
     }
 
@@ -126,19 +105,14 @@ public class PPMCalculateDetailSer {
     public int getPPMCalculateByProcedureName(Connection connection,String procedureName){
         int PPMCalculate = 0;
         try {
-
-//            connection = ConnectionUtil.getJdbcConnection();
             statement=connection.createStatement();
-/*            String sqlStr=String.format("SELECT %s FROM ppm_data_instance where procedure_name =%s"
-                    ,selectField,procedureName);*/
-            String sql = "SELECT SUM(charac_PPM) total FROM ppm_data_instance where procedure_name = '"
-                    + procedureName + "'";
-            System.out.println(sql);
+            String sql=String.format("SELECT SUM(PROCEDURE_PPM) total FROM PPM_DATA_INSTANCE WHERE PROCEDURE_NAME='%s'"
+                    ,procedureName);
+            log.info("sql="+sql);
             resultSet=statement.executeQuery(sql);
             log.info("查询的sql为“{}”,查询到的结果resultSet为：“{}”",sql,resultSet);
             if(resultSet!=null){
                 while (resultSet.next()){
-
                     PPMCalculate = resultSet.getInt("total");
                 }
             }

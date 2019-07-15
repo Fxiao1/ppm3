@@ -98,31 +98,26 @@ public class PPMCalculateDetailController {
         List<PPMCalculateDetailEntity> formList = new LinkedList<PPMCalculateDetailEntity>();
         try {
             connection = ConnectionUtil.getJdbcConnection();
-
-
-        log.info("parameterName={ "+ startStr +" "+ endStr +" }");
-
-        PPMCalculateDetailSer service = new PPMCalculateDetailSer();
-
-        List<String> procedureNameList = service.getProcedureNameList(connection,startStr,endStr);//获取工序名称列表
-        System.out.println("controller>>>>procedureNameList size() === " + procedureNameList.size());
-        //去重
-        List<String> listNew=new ArrayList<>();
-        Set set=new HashSet();
-        for (String str:procedureNameList) {
-            if(set.add(str)){
-                listNew.add(str);
+            log.info("parameterName={ "+ startStr +" "+ endStr +" }");
+            PPMCalculateDetailSer service = new PPMCalculateDetailSer();
+            List<String> procedureNameList = service.getProcedureNameList(connection,startStr,endStr);//获取工序名称列表
+            System.out.println("controller>>>>procedureNameList size() === " + procedureNameList.size());
+            //去重
+            List<String> listNew=new ArrayList<>();
+            Set set=new HashSet();
+            for (String str:procedureNameList) {
+                if(set.add(str)){
+                    listNew.add(str);
+                }
             }
-        }
+            for (String name: listNew) {
+                PPMCalculateDetailEntity calculateDetailEntity = new PPMCalculateDetailEntity();
+                calculateDetailEntity.setProcedureName(name);//工序名称
 
-        for (String name: listNew) {
-            PPMCalculateDetailEntity calculateDetailEntity = new PPMCalculateDetailEntity();
-            calculateDetailEntity.setProcedureName(name);//工序名称
-
-            calculateDetailEntity.setCharacName(service.getCharacNameList(connection,name));//工序检验特性名称列表
-            calculateDetailEntity.setProcedurePPM(service.getPPMCalculateByProcedureName(connection,name));//工序PPM
-            formList.add(calculateDetailEntity);
-        }
+                calculateDetailEntity.setCharacName(service.getCharacNameList(connection,name));//工序检验特性名称列表
+                calculateDetailEntity.setProcedurePPM(service.getPPMCalculateByProcedureName(connection,name));//工序PPM
+                formList.add(calculateDetailEntity);
+            }
 
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -131,8 +126,6 @@ public class PPMCalculateDetailController {
         } finally {
             ConnectionUtil.close(connection, null);
         }
-
-
         return formList;
     }
 
