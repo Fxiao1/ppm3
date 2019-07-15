@@ -145,7 +145,7 @@ function bindBtns(){
     $("#addProcedureBtn").click(function () {
         var _input=$(this).next();
         var procedureName=_input.val();
-        if(!procedureName){
+        if(procedureName==null||procedureName==""){
             alert("请输入工序名称");
             return false;
         }
@@ -455,9 +455,10 @@ function initProcessTable(_data){
     var option={
         data:_data,
         columns:[
-            {data:'number',title:"number"},
-            {data:"name",title:"name"},
-            {data:"oid",title:"名称","visible":false}
+            {data:'number',title:"编号"},
+            {data:"name",title:"名称"},
+            {data:"version",title:"版本"},
+            {data:"oid",title:"oid","visible":false}
         ],
         language:{"decimal":"","emptyTable":"No data available in table","info":"显示 _START_ 到 _END_ 页共 _TOTAL_ 条","infoEmpty":"显示 0 到 0 页共 0 条","infoFiltered":"(filtered from _MAX_ total entries)","infoPostFix":"","thousands":",","lengthMenu":"显示 _MENU_ 条","loadingRecords":"加载中...","processing":"Processing...","search":"搜索:","zeroRecords":"没有匹配项","paginate":{"first":"首页","last":"尾页","next":"下页","previous":"上页"},"aria":{"sortAscending":": activate to sort column ascending","sortDescending":": activate to sort column descending"},}
     };
@@ -491,6 +492,15 @@ function getModelList(){
 }
 //表单提交
 function templateSubmit(){
+
+	var templateName = $("#modelForm").find("input[name=name]").val();
+
+	if(templateName==null||templateName==""){
+		alert("请输入模板名");
+		return false;
+	}
+
+
     $.ajax({
         url:"/Windchill/servlet/Navigation/templatelink?actionName=post",
         data:$("#modelForm").serialize(),
