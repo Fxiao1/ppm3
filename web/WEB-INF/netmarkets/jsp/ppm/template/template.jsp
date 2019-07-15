@@ -30,7 +30,7 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-
+				<h3>模板列表</h3>
                 <div class="well">
                     <div class="btn-group" >
                         <button class="btn btn-info" type="button" id="addTempBtn" >新增</button>
