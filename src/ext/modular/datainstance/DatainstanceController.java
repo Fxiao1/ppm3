@@ -21,11 +21,10 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * des:
@@ -133,9 +132,14 @@ public class DatainstanceController {
     }
     private Date strToDate(String str) throws ParseException {
         if(StringUtils.isEmpty(str)){
-            return new Date();
+            Date date=new Date();
+            Calendar calendar=Calendar.getInstance();
+            calendar.setTime(date);
+            calendar.add(Calendar.HOUR,8);
+            Date currentDate=calendar.getTime();
+            return currentDate;
         }else{
-            SimpleDateFormat dataformat=new SimpleDateFormat("yyyy-MM-dd hh:mm");
+            SimpleDateFormat dataformat=new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
             return dataformat.parse(str.replace("T"," "));
         }
     }
@@ -148,93 +152,15 @@ public class DatainstanceController {
      * @return ext.modular.common.DataPack<java.util.List<ext.modular.datainstance.DatainstanceEntity>>
      **/
     private DataPack<List<DatainstanceEntity>> getAllDataInstanceForRequest(HttpServletRequest request){
-        /*String currentProcedureName;
-        String []procedureNames=request.getParameterValues("procedureName");
-        if(procedureNames==null){
-            log.info("procedureNames==null");
-            return ResultUtils.packData(null,"procedureNames==null",false);
-        }
-        log.info("procedureNames.length="+procedureNames.length);
-        int num=1;
-        int indexNum=0;
-
-        //所有的条目的容器
-        List<DatainstanceEntity> AllDataInstance=new LinkedList<>();
-        //循环工序
-
-        for (int i = 0; i < procedureNames.length; i++) {
-            currentProcedureName=procedureNames[i];
-            String []defectNumbers=request.getParameterValues(currentProcedureName+"_defectNumber");
-            String []kjs=request.getParameterValues(currentProcedureName+"_kj");
-            String []dataItemIds=request.getParameterValues("dataItemIds");
-            int logo=strToInt(request.getParameter("logo"));
-            boolean isUp=dataItemIds!=null;
-            log.info("defectNumbers.length={},defectNumbers=“{}”",defectNumbers.length,gson.toJson(defectNumbers));
-            //循环当前工序下的条目
-            for (int j = 0; j < defectNumbers.length; j++) {
-                log.info("正在尝试获取第{}条数据",num++);
-                DatainstanceEntity datainstance=new DatainstanceEntity();
-                String productCountStr=request.getParameter(currentProcedureName+".productCount");
-                if(isUp){
-                    datainstance.setId(strToInt(dataItemIds[indexNum++]));
-                }
-                datainstance.setProductCount(strToInt(productCountStr));
-                datainstance.setKj(strToInt(kjs[j]));
-                String defectNumberStr=defectNumbers[j];
-                int defectNumber=strToInt(defectNumberStr);
-                datainstance.setDefectNumber(defectNumber);
-                datainstance.setLogo(logo);
-                datainstance.setCheckType(request.getParameter(currentProcedureName+".checkType"));
-                datainstance.setCheckPerson(request.getParameter(currentProcedureName+".checkPerson"));
-                try {
-                    datainstance.setCheckTime(strToDate(request.getParameter(currentProcedureName+".checkTime")));
-                } catch (ParseException e) {
-                    e.printStackTrace();
-                }
-                //检验特性数量
-                String characQuantitystr=request.getParameter(currentProcedureName+".characQuantity");
-                int characQuantity=strToInt(characQuantitystr);
-                datainstance.setCharacQuantity(characQuantity);
-                String productIdStr=request.getParameter("productId");
-                datainstance.setProductId(strToInt(productIdStr));
-                datainstance.setCharacName(request.getParameter(currentProcedureName+".characName"));
-                datainstance.setProcedureName(currentProcedureName);
-                //工序检验特性总数
-                datainstance.setCharacteristicsTotal(datainstance.getProductCount()*datainstance.getCharacQuantity());
-                //工序检验特性检出的缺陷总数对应的每条特性的值
-                datainstance.setDefectNumberItem(
-                        datainstance.getProductCount()
-                                *datainstance.getKj()
-                                *datainstance.getDefectNumber()
-                );
-
-                if(datainstance.getCharacQuantity()==0) {
-                    //避免下一步计算的除数为0，直接退出循环。本次数据肯定有误
-                    log.error("正在执行ext.modular.datainstance.DatainstanceController方法，" +
-                                    "即将发生By zero错误。datainstance.getCharacQuantity()的数字为0，而除数不能为0，本次接收的key为{}，接收到的值为{}",
-                            currentProcedureName+".characQuantity",characQuantitystr
-                    );
-                    return ResultUtils.packData(null,"数据错误",false);
-                }
-                //特性的ppm值
-                Integer a=datainstance.getDefectNumber();
-                Integer b=datainstance.getCharacQuantity();
-                Integer c=1000000;
-                BigDecimal bi1=new BigDecimal(a.toString());
-                BigDecimal bi2=new BigDecimal(b.toString());
-                BigDecimal bi3=new BigDecimal(c.toString());
-                BigDecimal divide=bi1.divide(bi2,6, RoundingMode.HALF_UP);
-                BigDecimal multiply=divide.multiply(bi3);
-                datainstance.setCharacPPM(multiply.intValue());
-                log.info("正在计算第{}条特性的ppm值，参数为：defectNumber={}、characQuantity={}；结果为characPPM={}"
-                        ,num,datainstance.getDefectNumber(),datainstance.getCharacQuantity(),datainstance.getCharacPPM());
-                AllDataInstance.add(datainstance);
-            }
-        }
-        return ResultUtils.packData(AllDataInstance,"",true);*/
 
         int dataRowNum=strToInt(request.getParameter("maxRowNumber"));
         int quantity=strToInt(request.getParameter("quantity"));
+        //产品批次
+        String batch=request.getParameter("batch");
+        //类别
+        String category=request.getParameter("category");
+        ////整机、模件、线缆名称
+        String moduleName=request.getParameter("moduleName");
         //产品数
         int productCount=0;
         String checkType=null,checkPerson=null,oldProcedureIdStr=null,newProcedureIdStr;
@@ -247,6 +173,9 @@ public class DatainstanceController {
         for (int i = 0; i < dataRowNum + 1; i++) {
             DatainstanceEntity ins=new DatainstanceEntity();
             newProcedureIdStr=request.getParameter("procedureId_"+i);
+            ins.setBatch(batch);
+            ins.setCategory(category);
+            ins.setModuleName(moduleName);
             ins.setProcedureName(request.getParameter("procedureName_"+i));
             //本行数据有工序id，且当前行与旧行数据的id不同，则说明到了新的工序行了。如果是新工序了，则更新产品数、检验类型、检验人、检验时间这几个变量
             if(newProcedureIdStr!=null&&(!newProcedureIdStr.equals(oldProcedureIdStr))){
@@ -294,48 +223,49 @@ public class DatainstanceController {
                 );
                 return ResultUtils.packData(null,"数据错误，详细错误请查看日志",false);
             }
-            //特性的ppm值
-            Integer a=ins.getDefectNumber();
-            Integer b=ins.getCharacQuantity();
-            Integer c=1000000;
-            BigDecimal bi1=new BigDecimal(a.toString());
-            BigDecimal bi2=new BigDecimal(b.toString());
-            BigDecimal bi3=new BigDecimal(c.toString());
-            BigDecimal divide=bi1.divide(bi2,6, RoundingMode.HALF_UP);
-            BigDecimal multiply=divide.multiply(bi3);
-            ins.setCharacPPM(multiply.intValue());
-            log.info("正在计算第{}条特性的ppm值，参数为：defectNumber={}、characQuantity={}；结果为characPPM={}"
-                    ,i+1,ins.getDefectNumber(),ins.getCharacQuantity(),ins.getCharacPPM());
             ins.setTwId(strToInt(request.getParameter("procedureId_"+i)));
             ins.setQuantity(quantity);
             //这是新工序的数据，且前一个工序下有数据。或者当前是最后一次遍历。则对其进行一些计算和赋值
             log.info("i={},isNewProcedure={},currentProcedure.size={}",i,isNewProcedure,currentProcedure.size());
-            if((isNewProcedure&&currentProcedure.size()>0)||i==dataRowNum){
-                //如果是最后一次，需要将最后一次的数据添加进去
-                if(i==dataRowNum){
-                    currentProcedure.add(ins);
-                }
-                int procedurePpm=0;
-                //进行一些赋值
-                for (int j = 0; j < currentProcedure.size(); j++) {
-                    procedurePpm+=currentProcedure.get(j).getCharacPPM();
-                }
-                for (int j = 0; j < currentProcedure.size(); j++) {
-                    currentProcedure.get(j).setProcedurePpm(procedurePpm);
-                }
-                log.info("AllDataInstance.size={},currentProcedure.size={},i={}",
-                        AllDataInstance.size(),
-                        currentProcedure.size(),
-                        i
-                );
+            if(isNewProcedure&&currentProcedure.size()>0){
+                currentProcedure=calculationChil(currentProcedure);
                 AllDataInstance.addAll(currentProcedure);
                 currentProcedure.clear();
             }
             log.info("正在添加实例,i={}，添加前currentProcedure.size={},当前实例={}",i,currentProcedure.size(),ins.toString());
             currentProcedure.add(ins);
+            if(i==dataRowNum){
+                AllDataInstance.addAll(calculationChil(currentProcedure));
+            }
 
         }
         return ResultUtils.packData(AllDataInstance,"",true);
     }
+
+    private List<DatainstanceEntity> calculationChil(List<DatainstanceEntity> currentProcedure){
+        //进行一些计算
+        //工序下所有的检验特性总数加和
+        int characTotalCount=0;
+        //工序的缺陷总数
+        int defectNumberItemCount=0;
+        for (int j = 0; j < currentProcedure.size(); j++) {
+            characTotalCount+=currentProcedure.get(j).getCharacteristicsTotal();
+            defectNumberItemCount+=currentProcedure.get(j).getDefectNumberItem();
+        }
+        BigDecimal bi1=new BigDecimal(String.valueOf(defectNumberItemCount));
+        BigDecimal bi2=new BigDecimal(String.valueOf(characTotalCount));
+        BigDecimal bi3=new BigDecimal("1000000");
+        log.info("正在计算{}除以{}",bi1.doubleValue(),bi2.doubleValue());
+        BigDecimal bi4=bi1.divide(bi2,6,BigDecimal.ROUND_HALF_UP);
+        int procedurePpm=bi4.multiply(bi3).intValue();
+        //赋值回去
+        for (int j = 0; j < currentProcedure.size(); j++) {
+            currentProcedure.get(j).setProcedurePpm(procedurePpm);
+        }
+        return currentProcedure;
+    }
+
+
+
 
 }

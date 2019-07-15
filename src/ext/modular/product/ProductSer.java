@@ -1,6 +1,8 @@
 package ext.modular.product;
 
 import ext.modular.common.ConnectionUtil;
+import ext.modular.common.ResultUtils;
+import ext.modular.datainstance.DatainstanceSer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -227,23 +229,37 @@ public class ProductSer {
      * @param id
      * @return void
      **/
-    public void deleteProduct(int id){
+    public String deleteProduct(int id){
         Connection connection=null;
         Statement statement=null;
         try{
             connection= ConnectionUtil.getConnection();
             statement=connection.createStatement();
+            //先检查是否有表单了
+            String checkSql="SELECT count(ID) items_size FROM PPM_FORM WHERE PRODUCT_id="+id;
+            ResultSet resultSet = statement.executeQuery(checkSql);
+            if(resultSet!=null&&resultSet.next()){
+                int itemsSize=resultSet.getInt("items_size");
+                if(itemsSize>0){
+                    return ResultUtils.error("发现该产品下已有表单，请先删除表单后再重新尝试");
+                }else{
+                    log.info("清理表单实例里面的相关数据");
+                    //清理表单实例里面的相关数据
+                    DatainstanceSer datainstanceSer=new DatainstanceSer();
+                    datainstanceSer.deleteByProduct(id);
+                }
+            }
             String sqlStr=String.format("DELETE FROM ppm_product where ID ='%s'",id);
             log.info("删除的sql为“{}”",sqlStr);
             log.info("id={}",id);
             statement.executeQuery(sqlStr);
-
+            return ResultUtils.succ(null,"删除成功");
         }
-
         catch (SQLException e) {
             e.printStackTrace();
         }finally {
             ConnectionUtil.close(connection,statement);
         }
+        return ResultUtils.error("删除失败");
     }
 }

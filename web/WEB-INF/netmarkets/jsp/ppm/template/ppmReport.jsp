@@ -40,14 +40,14 @@
                     $("select[name=statisticalType]").prop({
                         "disabled":false,
                         "title":""
-                    }).val("HB");
+                    }).val("TB");
                     $("input[name=dateTime]").attr("onclick","WdatePicker({el:this,dateFmt:'yyyy-MM'})").val("");
 
                 }else if("year"==timeType){
                     $("select[name=statisticalType]").prop({
                         "disabled":true,
-                        "title":"对于年度的统计维度，同比不可选"
-                    }).val("HB");
+                        "title":"对于年度的统计维度，环比不可选"
+                    }).val("TB");
                     $("input[name=dateTime]").attr("onclick","WdatePicker({el:this,dateFmt:'yyyy'})").val("");
                 }
             });

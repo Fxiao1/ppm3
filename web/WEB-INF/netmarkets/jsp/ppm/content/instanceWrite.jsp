@@ -19,6 +19,8 @@
     <script type="text/javascript" src="../static/dataTables.bootstrap.min.js"></script>
     <script type="text/javascript" src="../static/content/content.js"></script>
     <script type="text/javascript"
+            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/My97DatePicker/My97DatePicker/WdatePicker.js"></script>
+    <script type="text/javascript"
             src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
     </script>
     <script type="text/javascript">
@@ -256,7 +258,7 @@
                     _row.children("td:eq(6)").text(n.defectNumber).addClass("qxNumber");
                     _row.children("td:eq(7)").text(n.kj);
                     _row.children("td:eq(8)").text(n.defectNumberItem?n.defectNumberItem:"0").addClass(n.procedureName+"_proceQx");
-                    _row.children("td:eq(9)").text(n.characPPM?n.characPPM:"0");
+                    _row.children("td:eq(9)").text(n.procedurePpm?n.procedurePpm:"0");
                     $("#instanceDataTable2>tbody").append(_row);
                 }
             })
@@ -382,10 +384,12 @@
                             ).prop("rowspan",le);
 
                             var checkTimeInput=_input.clone()
-                                .prop({"type":"datetime-local","name":"checkTime_"+rowNumber});
+                                .attr({
+                                    "type":"text","name":"checkTime_"+rowNumber,"readonly":"readonly",
+                                    "onclick":"WdatePicker({el:this,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
+                                });
                             if(n.checkTime){
-                                var checkTimeStr=n.checkTime.replace(" ","T");
-                                checkTimeInput.val(checkTimeStr);
+                                checkTimeInput.val(n.checkTime);
                             }
                             _row.children("td:eq(8)").prop("rowspan",le).append(
                                 checkTimeInput
@@ -514,10 +518,12 @@
                     );
 
                     var checkTimeInput=_input.clone()
-                        .prop({"type":"datetime-local","name":"checkTime_"+rowNumber});
+                        .attr({
+                            "type":"text","name":"checkTime_"+rowNumber,"readonly":"readonly",
+                            "onclick":"WdatePicker({el:this,dateFmt:'yyyy-MM-dd HH:mm:ss'})"
+                        });
                     if(n.checkTime){
-                        var checkTimeStr=n.checkTime.replace(" ","T");
-                        checkTimeInput.val(checkTimeStr);
+                        checkTimeInput.val(n.checkTime);
                     }
                     _row.children("td:eq(8)").append(
                         checkTimeInput
@@ -580,10 +586,8 @@
             })
         }
         function formCancel() {
-            if(confirm("确定放弃所填写的数据？")){
-                $("#formRow").addClass("hide");
-                $("#infoView").removeClass("hide");
-            }
+            $("#formRow").addClass("hide");
+            $("#infoView").removeClass("hide");
         }
         function toWirte() {
             $("#formRow").removeClass("hide");

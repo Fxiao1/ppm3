@@ -27,49 +27,6 @@ public class DatainstanceSer {
     private String insertField =
             "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM,ppm_order";
 
-    /**
-     * 获取根据表单logo获取表单实例列表
-     *
-     * @param
-     * @return java.util.List<ext.modular.datainstance.DatainstanceEntity>
-     * @Author renkai
-     * @Description
-     * @Date 2019/6/18
-     **/
-     /*public List<DatainstanceEntity> getListByLogo(int logo, Connection conn){
-         FormSer formSer=new FormSer();
-         DatainstanceSer datainstanceSer=new DatainstanceSer();
-         //获取表单列表
-         List<FormEntity> FormList=formSer.getFormList(logo);
-         List<DatainstanceEntity> datainstanceList=new LinkedList<DatainstanceEntity>();
-         //遍历表单列表，将值放到表单实例列表
-         for (FormEntity formEntity:FormList) {
-            DatainstanceEntity datainstanceEntity=new DatainstanceEntity();
-            datainstanceEntity.setCreator(formEntity.getCreator());
-            datainstanceEntity.setProductId(formEntity.getProductId());
-            datainstanceEntity.setCharaId(formEntity.getCharacId());
-            datainstanceEntity.setTwId(formEntity.getTwId());
-            datainstanceEntity.setLogo(formEntity.getLogo());
-            datainstanceEntity.setBatch(formEntity.getBatch());
-            datainstanceEntity.setQuantity(formEntity.getQuantity());
-            datainstanceEntity.setCategory(formEntity.getCategory());
-            datainstanceEntity.setModuleName(formEntity.getModuleName());
-            datainstanceEntity.setProcedureName(formEntity.getProcedureName());
-            datainstanceEntity.setCharacName(formEntity.getCharacName());
-            datainstanceEntity.setCharacQuantity(formEntity.getCharacQuantity());
-            datainstanceEntity.setKj(formEntity.getKj());
-            datainstanceEntity.setPpmOrder(formEntity.getPpmOrder());
-            log.info("表单实例对象datainstanceEntity为{}",datainstanceEntity.toString());
-            datainstanceList.add(datainstanceEntity);
-
-            //获取表单实例数据同时入库
-             if(datainstanceSer.getFlag(datainstanceEntity)==true){
-                 datainstanceSer.add(datainstanceEntity,conn);
-             }
-
-         }
-         return  datainstanceList;
-     }*/
     public List<DatainstanceEntity> getListByProductId(int productId, Connection connection) {
         Statement statement = null;
         List<DatainstanceEntity> list = new LinkedList<>();
@@ -214,7 +171,7 @@ public class DatainstanceSer {
                 gson.toJson(de));
         PreparedStatement ps = null;
         try {
-            //22个字段,23个占位符
+            //26个字段,24个占位符
             String sqlStr = "insert into ppm_data_instance(" +
                     //1-11
                     "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name," +
@@ -329,4 +286,52 @@ public class DatainstanceSer {
             ConnectionUtil.close(null, ps);
         }
     }
+    /**
+     * 删除产品下的表单实例数据
+     * @Author Fxiao
+     * @Description
+     * @Date 18:46 2019/7/14
+     * @param productId
+     * @return void
+     **/
+    public void deleteByProduct(int productId){
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr = "DELETE FROM PPM_DATA_INSTANCE WHERE PRODUCT_ID="+productId;
+            log.info("删除的sql为“{}”", sqlStr);
+            statement.executeUpdate(sqlStr);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+
+    }
+    /**
+     * 根据表单标识去删除表单数据实例
+     * @Author Fxiao
+     * @Description
+     * @Date 14:31 2019/7/15
+     * @param formLogo
+     * @return void
+     **/
+    public void deleteByFormLogo(int formLogo){
+        Connection connection = null;
+        Statement statement = null;
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr = "DELETE FROM PPM_DATA_INSTANCE WHERE logo="+formLogo;
+            log.info("删除的sql为“{}”", sqlStr);
+            statement.executeUpdate(sqlStr);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+    }
+
 }

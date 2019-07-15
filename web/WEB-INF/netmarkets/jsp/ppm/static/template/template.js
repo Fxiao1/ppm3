@@ -145,6 +145,10 @@ function bindBtns(){
     $("#addProcedureBtn").click(function () {
         var _input=$(this).next();
         var procedureName=_input.val();
+        if(!procedureName){
+            alert("请输入工序名称");
+            return false;
+        }
         var _data={"actionName":"add"};
         _data.procedureName=procedureName;
         $.ajax({
@@ -353,8 +357,8 @@ function bindBtns(){
         var mpm_number=currentTr.children("td:eq(0)").text();
         var mpm_oid=$("#processTable").DataTable().row(currentTr.index()).data().oid;
         var currentTemplate=$("#modelList").find("li.active");
-        if(currentTemplate.length!=1){
-            alert("请先选中模板");
+        if(currentTemplate.length!=1&&!confirm("您未选中模板，如果继续导入将仅导入到工序库，确认继续吗？")){
+            return false;
         }
         var templateId=currentTemplate.prop("id");
 
@@ -449,11 +453,6 @@ function initProcessTable(_data){
         myTable.destroy()
     }
     var option={
-        /* data:[
-            {"id":3,"name":"张三"},
-            {"id":4,"name":"李四"},
-            {"id":5,"name":"王麻子"}
-        ], */
         data:_data,
         columns:[
             {data:'number',title:"number"},

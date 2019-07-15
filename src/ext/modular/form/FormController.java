@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
+import ext.modular.datainstance.DatainstanceSer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -137,11 +138,15 @@ public class FormController {
         }
         //根据表单标识删除整个表单数据
         else if ("delete".equals(actionName)) {
-            String logo = request.getParameter("formSign");
-            if (StringUtils.isEmpty(logo)) {
+            String logoStr = request.getParameter("formSign");
+            if (StringUtils.isEmpty(logoStr)) {
                 jsonStr = ResultUtils.error("删除失败，缺少表单标识信息");
             } else {
-                service.delete(Integer.parseInt(logo));
+                Integer logo=Integer.parseInt(logoStr);
+                service.delete(logo);
+                //删除表单数据实例
+                DatainstanceSer datainstanceSer=new DatainstanceSer();
+                datainstanceSer.deleteByFormLogo(logo);
                 jsonStr = ResultUtils.succ(null, "根据表单标识删除表单成功");
             }
 

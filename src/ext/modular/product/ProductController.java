@@ -89,8 +89,7 @@ public class ProductController {
             if(StringUtils.isEmpty(id)){
                 jsonStr= ResultUtils.error("删除失败，缺少id信息");
             }else{
-                ser.deleteProduct(Integer.parseInt(id));
-                jsonStr=ResultUtils.succ(null,"删除成功");
+                jsonStr=ser.deleteProduct(Integer.parseInt(id));
             }
         }
         response.setCharacterEncoding("utf-8");
