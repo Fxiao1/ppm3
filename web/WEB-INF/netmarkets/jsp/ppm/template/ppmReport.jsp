@@ -130,15 +130,10 @@
                 keys2.push(""+k);
                 value2.push(v);
             });
-            $.each(data[prevTime], function (m, n) {
-                keys3.push(m);
-                value3.push(n);
+            $.each(keys2,function(m,n){
+                value3.push(data[prevTime][n]);
             });
             var typeKey=type=="HB"?"环比":"同比";
-            /*$.each(data[typeKey], function (j, s) {
-                percentageKey.push(j);
-                percentage.push(s);
-            });*/
             $.each(value3,function(i,n){
                 if(n==0){
                     percentage.push(0);
