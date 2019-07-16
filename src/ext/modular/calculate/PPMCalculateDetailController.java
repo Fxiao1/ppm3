@@ -39,23 +39,17 @@ public class PPMCalculateDetailController {
         String date = request.getParameter("dateTime");
         System.out.println("echars 统计中的 dataTime = " + date);
         if ("getForm".equals(actionName)){
-
-
             if (!"".equals(startStr) && !"".equals(endStr)) {
-
-            List<PPMCalculateDetailEntity> formList = getPPMCalculateDetailList(startStr,endStr);
-
-
-            if (formList != null) {
-                log.info("获取的列表长度为{}", String.valueOf(formList.size()));
-                jsonStr = ResultUtils.succ(formList, "获取表单列表");
-                log.info(jsonStr);
-            } else {
-                log.info("获取列表失败！");
-                jsonStr = ResultUtils.error("获取列表失败！");
+                List<PPMCalculateDetailEntity> formList = getPPMCalculateDetailList(startStr,endStr);
+                if (formList != null) {
+                    log.info("获取的列表长度为{}", String.valueOf(formList.size()));
+                    jsonStr = ResultUtils.succ(formList, "获取表单列表");
+                    log.info(jsonStr);
+                } else {
+                    log.info("获取列表失败！");
+                    jsonStr = ResultUtils.error("获取列表失败！");
+                }
             }
-
-        }
         } else if ("getData".equals(actionName)){
             System.out.println("获取Map数据方法");
             Map<String,Map<String,Integer>> mapData = getPPMData(date);

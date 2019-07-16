@@ -7,7 +7,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
-
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -103,7 +102,7 @@ public class PPMCalculateDetailSer {
      * @return
      */
     public int getPPMCalculateByProcedureName(Connection connection,String procedureName){
-        int PPMCalculate = 0;
+        int pPMCalculate = 0;
         try {
             statement=connection.createStatement();
             String sql=String.format("SELECT SUM(PROCEDURE_PPM) total FROM PPM_DATA_INSTANCE WHERE PROCEDURE_NAME='%s'"
@@ -113,13 +112,25 @@ public class PPMCalculateDetailSer {
             log.info("查询的sql为“{}”,查询到的结果resultSet为：“{}”",sql,resultSet);
             if(resultSet!=null){
                 while (resultSet.next()){
-                    PPMCalculate = resultSet.getInt("total");
+                    pPMCalculate = resultSet.getInt("total");
                 }
             }
+            //检验特性的数量
+            int countNum=0;
+            sql=String.format("SELECT COUNT(id) COUNT FROM PPM_DATA_INSTANCE WHERE PROCEDURE_NAME='%s'"
+                    ,procedureName);
+            resultSet=statement.executeQuery(sql);
+            if(resultSet!=null&&resultSet.next()){
+                countNum=resultSet.getInt("COUNT");
+            }else{
+                log.error("有错误，查询到检验特性个数为空结果集");
+            }
+            pPMCalculate=countNum==0?0:pPMCalculate/countNum;
+
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return PPMCalculate;
+        return pPMCalculate;
     }
 
     /**
