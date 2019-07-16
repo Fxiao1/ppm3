@@ -20,7 +20,7 @@
 
         $(function () {
             initPolyline(null,null);
-            initHistogram(null,null,null);
+            initHistogram(null,null,null,null,null);
             bindBtn();
             bindEven();
         })
@@ -116,8 +116,14 @@
                 thisTime="当年"
                 prevTime="去年";
             }else{
-                thisTime="当月"
-                prevTime="上月";
+                if(type=="TB"){
+                    thisTime="当月"
+                    prevTime="去年本月";
+                }else if(type=="HB"){
+                    thisTime="当月"
+                    prevTime="上月";
+                }
+
             }
 
             $.each(data[thisTime], function (k, v) {
@@ -129,21 +135,33 @@
                 value3.push(n);
             });
             var typeKey=type=="HB"?"环比":"同比";
-            $.each(data[typeKey], function (j, s) {
+            /*$.each(data[typeKey], function (j, s) {
                 percentageKey.push(j);
                 percentage.push(s);
+            });*/
+            $.each(value3,function(i,n){
+                if(n==0){
+                    percentage.push(0);
+                    return true;
+                }else{
+                    var growthRate=(value2[i]-n)/n;
+                    percentage.push((growthRate*100).toFixed(2));
+                }
+
             });
-            initHistogram(keys2,value3, value2);
-            initPolyline(percentageKey, percentage);
+            initHistogram(keys2,value3, value2,thisTime,prevTime);
+            initPolyline(keys2,percentage);
         }
 
-        //折线图
+        /**
+         * 折线图
+         */
         function initPolyline(percentageKey, percentage) {
             var dom = document.getElementById("polyline");
             var myChart2 = echarts.init(dom);
             option2 = {
                 title: {
-                    text: '折线图堆叠'
+                    text: 'ppm数据增长率'
                 },
                 tooltip: {
                     trigger: 'axis',
@@ -186,32 +204,20 @@
         /**
          * 柱状图
          * @param keys
-         * @param data1 上月
-         * @param data2 本月
+         * @param data1 上个时间周期数据
+         * @param data2 当前时间周期数据
+         * @param thisTime 上个时间周期名
+         * @param prevTime 当前时间周期名
          */
-        function initHistogram(keys, data1, data2) {
+        function initHistogram(keys, data1, data2,thisTime,prevTime) {
             //神经病一般的bug，传进来的数组对象就不能正确解析，非得在这里赋值
             var xAxisData = [];
             $.each(keys,function (i,n) {
                 xAxisData.push(n);
             })
-
-            var thisTime;
-            var prevTime;
-            //时间维度
-            var dateType=$("select[name=timeType]").val();
-            if(dateType=="year"){
-                thisTime="当年"
-                prevTime="去年";
-            }else{
-                thisTime="当月"
-                prevTime="上月";
-            }
-
-
             option3 = {
                 title: {
-                    text: '柱状图动画延迟'
+                    text: 'ppm数据柱状图'
                 },
                 legend: {
                     data: [prevTime, thisTime],

@@ -133,11 +133,26 @@ public class PPMCalculateDetailController {
         Map<String,Map<String,Integer>> map = new LinkedHashMap<>();
         Map<String,Integer> HB = new LinkedHashMap<>();
         Map<String,Integer> TB = new LinkedHashMap<>();
-
+        boolean isMonth=false;
+        if(date.length()>4){
+            isMonth=true;
+        }
+        //key的判断，应该以什么为key
+        String prevTimeKey=null;
+        String currentTimeKey=null;
+        String timeOnLastYearKey=null;
+        if(isMonth){
+            prevTimeKey="上月";
+            currentTimeKey="当月";
+            timeOnLastYearKey="去年本月";
+        }else{
+            prevTimeKey="去年";
+            currentTimeKey="当年";
+        }
         try {
             connection = ConnectionUtil.getJdbcConnection();
             System.out.println("date.length() == " + date.length());
-            if (date.length()>4){//统计月
+            if (isMonth){//统计月
                 log.info("统计月数据");
                 String startStr = date + "-01";
                 String endStr = date + "-" + getEndStr(date);
@@ -150,9 +165,9 @@ public class PPMCalculateDetailController {
                 Map<String,Integer> lastYearProcedureData =
                         service.getPPMData(connection,toLastYearMonth(date)[0],toLastYearMonth(date)[1]);//获取当前月的去年同月数据
 
-                List<String> listHB = allProcedure(procedureData,lastMonthProcedureData);
+                List<String> listHB = new LinkedList<>(allProcedure(procedureData,lastMonthProcedureData));
                 log.info("listHB 的 size()："+ listHB.size() +" }");
-                List<String> listTB = allProcedure(procedureData,lastYearProcedureData);
+                List<String> listTB = new LinkedList<>(allProcedure(procedureData,lastYearProcedureData));
                 log.info("listTB 的 size()："+ listTB.size() +" }");
                 for (String name: listHB) {
 
@@ -199,9 +214,9 @@ public class PPMCalculateDetailController {
                 }
 
 
-                map.put("当月",procedureData);
-                map.put("上月",lastMonthProcedureData);
-                map.put("去年本月",lastYearProcedureData);
+                map.put(currentTimeKey,procedureData);
+                map.put(prevTimeKey,lastMonthProcedureData);
+                map.put(timeOnLastYearKey,lastYearProcedureData);
                 map.put("环比",HB);
                 map.put("同比",TB);
             }else{//统计年
@@ -214,7 +229,7 @@ public class PPMCalculateDetailController {
                 Map<String,Integer> procedureData = service.getPPMData(connection,startStr,endStr);//获取当年的数据
                 Map<String,Integer> lastYearProcedureData =
                         service.getPPMData(connection,toLastYear(date)[0],toLastYear(date)[1]);//获取当年的去年数据
-                List<String> listHB = allProcedure(procedureData,lastYearProcedureData);
+                List<String> listHB =new LinkedList<>(allProcedure(procedureData,lastYearProcedureData)) ;
                 log.info("listHB 的 size()："+ listHB.size() +" }");
                 for (String name: listHB) {
 
@@ -236,8 +251,8 @@ public class PPMCalculateDetailController {
                         HB.put(name, (int) ((fenzi/fenmu)*100 -100));
                     }
                 }
-                map.put("当年",procedureData);
-                map.put("去年",lastYearProcedureData);
+                map.put(currentTimeKey,procedureData);
+                map.put(prevTimeKey,lastYearProcedureData);
                 map.put("环比",HB);
             }
 
@@ -247,6 +262,21 @@ public class PPMCalculateDetailController {
             e.printStackTrace();
         } finally {
             ConnectionUtil.close(connection, null);
+        }
+        Set<String>allProcedureName=null;
+        //包装一下数据，如果没有值的应该将值设置为0,而不是直接没有这项
+        allProcedureName=allProcedure(map.get(currentTimeKey),map.get(prevTimeKey));
+        if(map.get(timeOnLastYearKey)!=null){
+            for (String procedureName : map.get(timeOnLastYearKey).keySet()) {
+                allProcedureName.add(procedureName);
+            } 
+        }
+        for (String procedureName : allProcedureName) {
+            if(map.get(currentTimeKey).get(procedureName)==null) map.get(currentTimeKey).put(procedureName,0);
+            if(map.get(prevTimeKey).get(procedureName)==null) map.get(prevTimeKey).put(procedureName,0);
+            if(map.get(timeOnLastYearKey)!=null && map.get(timeOnLastYearKey).get(procedureName)==null){
+                map.get(timeOnLastYearKey).put(procedureName,0);
+            }
         }
         return map;
     }
@@ -279,7 +309,6 @@ public class PPMCalculateDetailController {
         strs[0] = startStr;
         strs[1] = endStr;
         return strs;
-
     }
 
     /**
@@ -327,8 +356,8 @@ public class PPMCalculateDetailController {
      * @param map2
      * @return
      */
-    public List<String> allProcedure(Map<String,Integer> map1, Map<String,Integer> map2){
-        List<String> procedureList = new LinkedList<>();
+    public Set<String> allProcedure(Map<String,Integer> map1, Map<String,Integer> map2){
+        /*List<String> procedureList = new LinkedList<>();
         Set<String> set = map1.keySet();
         for (String name:set) {
             procedureList.add(name);
@@ -345,8 +374,16 @@ public class PPMCalculateDetailController {
             if(set3.add(str)){
                 listNew.add(str);
             }
+        }*/
+        //对不起，上面这过程，我是在看不下去了！
+        Set<String> set=new HashSet<>();
+        for (String key: map1.keySet()) {
+            set.add(key);
         }
-        return listNew;
+        for (String key: map2.keySet()) {
+            set.add(key);
+        }
+        return set;
     }
 
     /**
