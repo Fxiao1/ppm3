@@ -454,6 +454,7 @@ function initProcessTable(_data){
     }
     var option={
         data:_data,
+        autoWidth:false,
         columns:[
             {data:'number',title:"编号"},
             {data:"name",title:"名称"},
