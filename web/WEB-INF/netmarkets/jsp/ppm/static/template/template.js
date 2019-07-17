@@ -43,10 +43,10 @@ function getProcedure(){
 function removeProce(btn){
     //先将该工序重新添加会选项框，然后再删除该选项
     var thisParent=$(btn).parent();
-    var proceName=thisParent.find("input.form-control ").val();
+    /*var proceName=thisParent.find("input.form-control ").val();
     var proceId=thisParent.find("input[name=procedure_id]").val();
     var _option=$("<option></option>").text(proceName).prop("value",proceId);
-    $("#gongxu").append(_option);
+    $("#gongxu").append(_option);*/
     thisParent.remove();
 }
 //绑定按钮
@@ -355,13 +355,12 @@ function bindBtns(){
             return false;
         }
         var mpm_number=currentTr.children("td:eq(0)").text();
-        var mpm_oid=$("#processTable").DataTable().row(currentTr.index()).data().oid;
+        var mpm_oid=$("#processTable").DataTable().row(currentTr).data().oid;
         var currentTemplate=$("#modelList").find("li.active");
         if(currentTemplate.length!=1&&!confirm("您未选中模板，如果继续导入将仅导入到工序库，确认继续吗？")){
             return false;
         }
         var templateId=currentTemplate.prop("id");
-
         $.ajax({
             url:'/Windchill/servlet/Navigation/mpmprocessPlan?actionName=addOperation',
             type:'get',
@@ -459,7 +458,7 @@ function initProcessTable(_data){
             {data:'number',title:"编号"},
             {data:"name",title:"名称"},
             {data:"version",title:"版本"},
-            {data:"oid",title:"oid","visible":false}
+            {data:"oid",title:"oid",visible:false}
         ],
         language:{"decimal":"","emptyTable":"No data available in table","info":"显示 _START_ 到 _END_ 页共 _TOTAL_ 条","infoEmpty":"显示 0 到 0 页共 0 条","infoFiltered":"(filtered from _MAX_ total entries)","infoPostFix":"","thousands":",","lengthMenu":"显示 _MENU_ 条","loadingRecords":"加载中...","processing":"Processing...","search":"搜索:","zeroRecords":"没有匹配项","paginate":{"first":"首页","last":"尾页","next":"下页","previous":"上页"},"aria":{"sortAscending":": activate to sort column ascending","sortDescending":": activate to sort column descending"},}
     };
