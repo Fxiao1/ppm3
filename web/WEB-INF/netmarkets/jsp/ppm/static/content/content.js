@@ -256,9 +256,27 @@ function bindBtn() {
             var productCode=currentNode.code;
             var productName=currentNode.text;
             var productId=currentNode.id;
-            window.location.href="/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
-                modelName+"&productCode="+productCode+"&productName="+productName+
-            "&productId="+productId;
+            var formMark="";
+            $.getJSON(
+                "/Windchill/servlet/Navigation/form",
+                {"actionName":"getByProId","productId":productId},
+                function (result) {
+                    if(result.success){
+                        var _length=result.data.length;
+                        if(_length>0){
+                            var _form=result.data[_length-1]
+                            formMark=_form.logo;
+                        }
+                        window.location.href="/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
+                            modelName+"&productCode="+productCode+"&productName="+productName+
+                            "&productId="+productId+"&logo="+formMark+"&pageType=add";
+                    }else{
+                        alert(result.message)
+                    }
+                }
+            )
+
+
         }else{
             alert("请选中一条产品");
         }

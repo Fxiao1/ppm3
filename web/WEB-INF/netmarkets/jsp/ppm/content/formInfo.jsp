@@ -67,7 +67,10 @@
                 var quantity=data[0].quantity;
                 var moduleName=data[0].moduleName;
                 var category=data[0].category;
-                $("#myFormEntity").find("input[name=batch]").attr("value",batch);
+                var pageType=$("#hideInfo").find("input[name=pageType]").val();
+                if(pageType!="add"){
+                    $("#myFormEntity").find("input[name=batch]").attr("value",batch);
+                }
                 $("#myFormEntity").find("input[name=quantity]").attr("value",quantity);
                 $("#myFormEntity").find("input[name=moduleName]").attr("value",moduleName);
                 $("#myFormEntity").find("select[name=category]").val(category);
@@ -416,6 +419,7 @@
         <div id="hideInfo">
             <input type="hidden" name="formLogo" value="<%=request.getParameter("logo")%>">
             <input type="hidden" name="productId" value="<%=request.getParameter("productId")%>">
+            <input type="hidden" name="pageType" value="<%=request.getParameter("pageType")%>">
 
         </div>
         <div class="container-fluid">
