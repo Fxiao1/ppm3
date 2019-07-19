@@ -55,6 +55,7 @@ function bindBtns(){
     $("#addTempBtn").click(function(){
         //动态获取所有工序
         getProcedure();
+        $("#myModalLabel").text("新增模板");
         $("#addModel").modal("show");
     });
     //"选择工序"按钮
@@ -130,11 +131,13 @@ function bindBtns(){
     //修改模板按钮
     $("#modifyTempBtn").click(function () {
         var seleLi=$("#modelList").find("li.active");
+
         if(seleLi.length==1){
             //带入模板基础信息
             var _id=seleLi.prop("id");
             $("#modelForm").find("input[name=id]").val(_id);
             $("#modelForm").find("input[name=name]").val(seleLi.text());
+            $("#myModalLabel").text("修改模板");
             //获取全部工序放到下拉框里面
             getProceByTemplate(_id);
         }else{

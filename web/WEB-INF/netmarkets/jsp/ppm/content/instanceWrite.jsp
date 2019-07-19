@@ -305,14 +305,20 @@
             //当前页面正在进行什么操作？
             var pageType=$("#hideInfo").find("input[name=pageType]").val();
             var _input=$("<input>").addClass("form-control").css("width","100%");
-            var _select=$("<select></select>").addClass("form-control").css("width","100%");
+            /*var _select=$("<select></select>").addClass("form-control").css("width","100%");
             var _option=$("<option></option>");
             _select
                 .append(_option.clone().css("display", "none"))
                 .append(_option.clone().text("自检").val("ZiJ"))
                 .append(_option.clone().text("互检").val("HuJ"))
                 .append(_option.clone().text("专检").val("ZhJ"))
-                .append(_option.clone().text("军检").val("JunJ"));
+                .append(_option.clone().text("军检").val("JunJ"));*/
+            var checkTypeObj={
+                "ZiJ":"自检",
+                "HuJ":"互检",
+                "ZhJ":"专检",
+                "JunJ":"军检"
+            }
             $.each(a,function(j,k){
                 var le=k.length;
                 //如果工序下面有特性
@@ -369,13 +375,18 @@
                             ).append(
                                 _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                             );
-                            var temp_select=_select.clone().prop("name","checkType_"+rowNumber);
-                            if(n.checkType){
-                                temp_select.val(n.checkType);
-                            }
                             _row.children("td:eq(6)").prop("rowspan",le).append(
-                                temp_select
+                                _input.clone().attr({
+                                    "type":"hidden",
+                                    "name":"checkType_"+rowNumber,
+                                    "value":n.checkType
+                                })
 
+                            ).append(
+                                _input.clone().attr({
+                                    "value":checkTypeObj[n.checkType],
+                                    "readonly":"readonly"
+                                })
                             );
                             _row.children("td:eq(7)").append(
                                 _input.clone()
@@ -503,11 +514,18 @@
                     ).append(
                         _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                     );
-                    var temp_select=_select.clone().prop("name","checkType_"+rowNumber);
-                    if(n.checkType){
-                        temp_select.val(n.checkType);
-                    }
-                    _row.children("td:eq(6)").append(temp_select);
+                    _row.children("td:eq(6)").append(
+                        _input.clone().attr({
+                            "type":"hidden",
+                            "name":"checkType_"+rowNumber,
+                            "value":n.checkType
+                        })
+                    ).append(
+                        _input.clone().attr({
+                            "value":checkTypeObj[n.checkType],
+                            "readonly":"readonly"
+                        })
+                    );
                     _row.children("td:eq(7)").append(
                         _input.clone()
                             .prop({
