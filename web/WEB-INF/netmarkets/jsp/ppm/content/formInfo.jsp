@@ -173,8 +173,9 @@
 
                 var charaList=$("#tempForm>tbody>tr");
                 var formLogo=$("#hideInfo").find("input[name=formLogo]").val();
+                var pageType=$("#hideInfo").find("input[name=pageType]").val();
                 var _url="";
-                if(formLogo){
+                if(pageType!="add"){
                     _url="/Windchill/servlet/Navigation/form?actionName=update&logo="+formLogo;
                 }else{
                     _url="/Windchill/servlet/Navigation/form?actionName=post";
