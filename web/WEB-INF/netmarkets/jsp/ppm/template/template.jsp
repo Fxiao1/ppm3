@@ -164,7 +164,7 @@
                             <div class="form-group">
                                 <label  class="col-md-3 control-label">检验类型</label>
                                 <div class="col-md-7">
-                                	<select name="checkType">
+                                	<select name="checkType" class="form-control">
                                 		<option selected="selected" value="DZZJ">电装自检</option>
                                 		<option value="DZHJ">电装互检</option>
                                 		<option value="DZJY">电装检验</option>

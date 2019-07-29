@@ -148,7 +148,7 @@ function bindBtns(){
     $("#addProcedureBtn").click(function () {
         var _input=$(this).next();
         var procedureName=_input.val();
-        if(procedureName==null||procedureName==""){
+        if(procedureName==null||procedureName.trim()==""){
             alert("请输入工序名称");
             return false;
         }
@@ -270,6 +270,13 @@ function bindBtns(){
             return 1;
         }else{
             return 0;
+        }
+
+        //检查名称不为空
+        var characName=$("#characForm").find("input[name=name]").val();
+       if(characName==null||characName.trim(characName)==""){
+           alert("特性名称不能为空");
+           return false;
         }
     }
 
@@ -498,7 +505,7 @@ function templateSubmit(){
 
 	var templateName = $("#modelForm").find("input[name=name]").val();
 
-	if(templateName==null||templateName==""){
+	if(templateName==null||templateName.trim()==""){
 		alert("请输入模板名");
 		return false;
 	}

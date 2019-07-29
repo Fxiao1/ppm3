@@ -396,6 +396,11 @@ function deleProduct(productId) {
 
 //添加产品
 function addProduct() {
+    var productName=$("#productForm").find("input[name=name]").val();
+    if(productName==null||productName.trim()==""){
+        alert("产品名称不能为空");
+        return false;
+    }
     var _data=$("#productForm").serialize();
     $.ajax({
         url:"/Windchill/servlet/Navigation/product?actionName=post",

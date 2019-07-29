@@ -384,20 +384,27 @@
                         alert("请先选择工序");
                         return false;
                     }
+                    var chrarcName=$("#chrarcForm").find("input[name=chrarcName]").val();
+                    if(chrarcName==null||chrarcName.trim()==""){
+                        alert("工序检验特性名称不能为空");
+                        return false;
+                    }
+
                     var seleProced=$("#chrarcForm").find("select[name=charaList]").find("option:selected");
                     //工序id
                     var proceId=seleProced.val();
                     //工序name
                     var proceName=seleProced.text();
-                    var chrarcName=$("#chrarcForm").find("input[name=chrarcName]").val();
+
                     //特性数量
                     var total=$("#chrarcForm").find("input[name=total]").val();
                     //加权系数
                     var coefficient=$("#chrarcForm").find("input[name=coefficient]").val();
 
-                    //获取序号
+                    //获取序号,如果添加的是第一行，则序号为0
                     var lastTr=$("#tempForm").find("tbody>tr:last");
-                    var lastIndex=parseInt(lastTr.find("td:eq(0)").text());
+                    var lastIndexStr=lastTr.find("td:eq(0)").text();
+                    var lastIndex=lastIndexStr==""?0:parseInt(lastIndexStr);
                     //获取最后一次的排序号
                     var lastOrder=parseInt(lastTr.find("td:eq(7)").text());
 
