@@ -1,12 +1,15 @@
 package ext.modular.calculate;
 
 import ext.modular.common.ConnectionUtil;
+import ext.modular.datainstance.DatainstanceEntity;
+import ext.modular.form.FormEntity;
 import ext.modular.product.ProductEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -308,4 +311,255 @@ public class PPMCalculateDetailSer {
         }
         return conn;
     }
+    
+    /**
+     * ln
+     * 根据起止时间查询产品编号列表
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<String> getProductIdList(Connection connection,String startDate, String endDate){
+        List<String> productIdList = new LinkedList<String>();
+        try {
+           statement=connection.createStatement();
+            String sqlStr=String.format("SELECT PRODUCT_ID FROM ppm_data_instance where createTime " +
+                    "between to_date('%s','yyyy-MM-dd') and to_date('%s','yyyy-MM-dd') GROUP BY PRODUCT_ID",startDate,endDate);
+          resultSet=statement.executeQuery(sqlStr);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    String productId = resultSet.getString("PRODUCT_ID");//产品名称
+                    productIdList.add(productId);
+                }
+                System.out.println("service>>>>procedureNameList size() === " + productIdList.size());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return productIdList;
+    }
+    /**
+     * ln
+     * 根据起止时间、产品id查询产品产品级工序总检验缺陷总数和产品级工序检验特性总数，计算产品ppm
+     * @param product_id
+     * @return
+     */
+    public int getPPMCalculateByProductId(Connection connection,int productId,String startDate, String endDate){
+        int pPMCalculate = 0;
+        int pPMProNum = 0;
+        try {
+            statement=connection.createStatement();
+            String sql=String.format("SELECT sum(kj) numb,sum(CHARACTERISTICS_TOTAL) total FROM PPM_DATA_INSTANCE WHERE"
+            		+ " createTime between to_date('%s','yyyy-MM-dd') and to_date('%s','yyyy-MM-dd')"
+            		+ " and PRODUCT_ID='%s'"
+                    ,startDate,endDate,productId);
+            log.info("sql="+sql);
+            resultSet=statement.executeQuery(sql);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为：“{}”",sql,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    pPMCalculate = resultSet.getInt("total");
+                    pPMProNum = resultSet.getInt("numb");
+                    System.out.println("分子"+pPMProNum+"分母"+pPMCalculate);
+                }
+            }
+            pPMCalculate= pPMCalculate==0?0:(int)((float)pPMProNum/pPMCalculate*Math.pow(10, 6));
+            System.out.println(pPMCalculate);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pPMCalculate;
+    }
+    
+    
+    
+    /**
+     * ln
+     * 查询所有型号名列表
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<String> getModelNameList(Connection connection){
+        List<String> modelList = new LinkedList<String>();
+        try {
+           statement=connection.createStatement();
+            String sqlStr=String.format("select model_type from ppm_product group by model_type");
+          resultSet=statement.executeQuery(sqlStr);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    String modelType = resultSet.getString("model_type");//型号名称
+                    System.out.println("型号名称"+modelType);
+                    modelList.add(modelType);
+                }
+                System.out.println("service>>>>procedureNameList size() === " + modelList.size());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return modelList;
+    }
+    
+    /**
+     * ln
+     * 根据型号名查询产品id集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<Integer> getProIdListByModelName(Connection connection,String modelType){
+        List<Integer> proIdList = new LinkedList<Integer>();
+        try {
+           statement=connection.createStatement();
+            String sqlStr=String.format("select id from ppm_product where model_type='%s'",modelType);
+          resultSet=statement.executeQuery(sqlStr);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    int proId = resultSet.getInt("id");//产品id
+                    proIdList.add(proId);
+                }
+                System.out.println("service>>>>procedureNameList size() === " + proIdList.size());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return proIdList;
+    }
+    
+    /**
+     * ln
+     * 根据型号名查询产品id 和产品名集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<ProductEntity> getProListByModelName(Connection connection,String modelType){
+        List<ProductEntity> proList = new LinkedList<ProductEntity>();
+        try {
+           statement=connection.createStatement();
+            String sqlStr=String.format("select id ,name from ppm_product where model_type='%s'",modelType);
+          resultSet=statement.executeQuery(sqlStr);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                	ProductEntity productEntity = new ProductEntity();
+                	productEntity.setId(resultSet.getInt("id"));//产品id
+                	productEntity.setName(resultSet.getString("name"));
+                	proList.add(productEntity);
+                }
+                System.out.println("service>>>>productList size() === " + proList.size());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return proList;
+    }
+    
+    /**
+     * ln
+     * 根据产品名查询模板logo 和模件名集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public List<FormEntity> getFormListByProId(Connection connection,int proId){
+        List<FormEntity> proList = new LinkedList<FormEntity>();
+        try {
+           statement=connection.createStatement();
+            String sqlStr=String.format("select MODULE_NAME,LOGO from ppm_form where product_id='%s' GROUP BY MODULE_NAME,LOGO",proId);
+          resultSet=statement.executeQuery(sqlStr);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为{}",sqlStr,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                	FormEntity formEntity = new FormEntity();
+                	formEntity.setLogo(resultSet.getInt("LOGO"));//表单logo
+                	formEntity.setModuleName(resultSet.getString("MODULE_NAME"));//表单名
+                	proList.add(formEntity);
+                }
+                System.out.println("service>>>>procedureNameList size() === " + proList.size()+"proList"+proList.toString());
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return proList;
+    }
+    
+    
+    /**
+     * ln 
+     * 2019/7/26
+     * 根据模板logo查询并计算模件的ppm集合
+     * @param startDate
+     * @param endDate
+     * @return
+     */
+    public int getPPMCalculateBymj(Connection connection,int logo,String startDate, String endDate){
+        int pPMCalculate = 0;
+        int pPMProNum = 0;
+        try {
+            statement=connection.createStatement();
+            String sql=String.format("SELECT sum(kj) numb,sum(CHARACTERISTICS_TOTAL) total FROM PPM_DATA_INSTANCE WHERE"
+            		+ " createTime between to_date('%s','yyyy-MM-dd') and to_date('%s','yyyy-MM-dd')"
+            		+ " and PRODUCT_ID in(select id from ppm_product where logo='%s')"
+                    ,startDate,endDate,logo);
+            log.info("sql="+sql);
+            resultSet=statement.executeQuery(sql);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为：“{}”",sql,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    pPMCalculate = resultSet.getInt("total");
+                    pPMProNum = resultSet.getInt("numb");
+                    System.out.println("分子"+pPMProNum+"分母"+pPMCalculate);
+                }
+            }
+            pPMCalculate= pPMCalculate==0?0:(int)((float)pPMProNum/pPMCalculate*Math.pow(10, 6));
+            System.out.println(pPMCalculate);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pPMCalculate;
+    }
+    
+   
+    
+    
+    /**
+     * ln
+     * 根据起止时间、模件id查询模件级工序总检验缺陷总数和产品级工序检验特性总数，计算型号ppm
+     * @param product_id
+     * @return
+     */
+    public int getPPMCalculateByXH(Connection connection,String modelType,String startDate, String endDate){
+        int pPMCalculate = 0;
+        int pPMProNum = 0;
+        try {
+            statement=connection.createStatement();
+            String sql=String.format("SELECT sum(kj) numb,sum(CHARACTERISTICS_TOTAL) total FROM PPM_DATA_INSTANCE WHERE"
+            		+ " createTime between to_date('%s','yyyy-MM-dd') and to_date('%s','yyyy-MM-dd')"
+            		+ " and PRODUCT_ID in(select id from ppm_product where model_type='%s')"
+                    ,startDate,endDate,modelType);
+            log.info("sql="+sql);
+            resultSet=statement.executeQuery(sql);
+            log.info("查询的sql为“{}”,查询到的结果resultSet为：“{}”",sql,resultSet);
+            if(resultSet!=null){
+                while (resultSet.next()){
+                    pPMCalculate = resultSet.getInt("total");
+                    pPMProNum = resultSet.getInt("numb");
+                    System.out.println("分子"+pPMProNum+"分母"+pPMCalculate);
+                }
+            }
+            pPMCalculate= pPMCalculate==0?0:(int)((float)pPMProNum/pPMCalculate*Math.pow(10, 6));
+            System.out.println(pPMCalculate);
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return pPMCalculate;
+    }
+    
 }

@@ -32,6 +32,7 @@ public class FormSer {
      * @Date 12:17 2019/6/17
      * @param formEntity
      * @return void
+     * 修改  ln
      **/
     public void add(FormEntity formEntity,Connection connection )  {
         Statement statement=null;
@@ -40,11 +41,11 @@ public class FormSer {
             String currentUser=current.getName();
             statement=connection.createStatement();
             String sqlStr=String.format("insert into ppm_form(" +
-                            "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,ppm_order) " +
-                            "values(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)"
+                            "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,check_type,templateName,templateId,PRODUCTPHASE,ppm_order) " +
+                            "values(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)"
                     ,currentUser,formEntity.getProductId(),formEntity.getCharacId(),formEntity.getTwId(),
                      formEntity.getLogo(),formEntity.getBatch(),formEntity.getQuantity(),formEntity.getCategory(),formEntity.getModuleName(),formEntity.getProcedureName(),
-                     formEntity.getCharacName(),formEntity.getCharacQuantity(),formEntity.getKj());
+                     formEntity.getCharacName(),formEntity.getCharacQuantity(),formEntity.getKj(),formEntity.getCheckType(),formEntity.getTemplateName(),formEntity.getTemplateId(),formEntity.getProductPhase());
             log.info("ext.modular.form.FormSer.add 新增的sql为“{}”",sqlStr);
             statement.execute(sqlStr);
         } catch (SQLException e) {
@@ -154,6 +155,7 @@ public class FormSer {
      * @Date 14:24 2019/6/20
      * @param productId
      * @return java.util.List
+     * 修改 ln
      **/
     public List getlistByProduct(int productId){
         Connection connection= null;
@@ -164,7 +166,7 @@ public class FormSer {
             connection=ConnectionUtil.getJdbcConnection();
             statement=connection.createStatement();
             statement2=connection.createStatement();
-            String sql=String.format("SELECT logo,category,module_name,batch,quantity,creator,PRODUCT_ID FROM ppm_form GROUP BY logo,category,module_name,batch,quantity,creator,PRODUCT_ID HAVING PRODUCT_ID=%s",
+            String sql=String.format("SELECT logo,category,module_name,batch,quantity,creator,CHECK_TYPE,templateName,templateId,PRODUCTPHASE,PRODUCT_ID FROM ppm_form GROUP BY logo,category,module_name,batch,quantity,creator,CHECK_TYPE,templateName,templateId,PRODUCTPHASE,PRODUCT_ID HAVING PRODUCT_ID=%s",
                     productId);
             log.info("查询全部数据的sql为："+sql);
             ResultSet resultSet=statement.executeQuery(sql);
@@ -178,7 +180,11 @@ public class FormSer {
                     map.put("batch",resultSet.getString("batch"));
                     map.put("quantity",resultSet.getInt("quantity"));
                     map.put("creator",resultSet.getString("creator"));
+                    map.put("checkType",resultSet.getString("check_type"));
+                    map.put("templateName",resultSet.getString("templateName"));
+                    map.put("templateId",resultSet.getString("templateId"));
                     map.put("productId",resultSet.getInt("product_id"));
+                    map.put("ProductPhase",resultSet.getString("ProductPhase"));
                     //查询时间,条件是产品和form标识
                     String seleTimeSql=String.format("SELECT * FROM (SELECT  CREATETIME,UPDATETIME FROM ppm_form " +
                                 "WHERE PRODUCT_ID=%s AND logo=%s  ORDER BY CREATETIME) WHERE rownum =1",
@@ -261,6 +267,7 @@ public class FormSer {
      * @Date 21:53 2019/6/27
      * @param rs
      * @return java.util.List<ext.modular.form.FormEntity>
+     * 修改 ln
      **/
     private DataPack<List<FormEntity>> getFormListByResultSet(ResultSet rs) throws SQLException {
         List<FormEntity> fromList=new LinkedList<>();
@@ -282,6 +289,10 @@ public class FormSer {
                 formEntity.setCharacQuantity(rs.getInt("charac_quantity"));
                 formEntity.setKj(rs.getInt("kj"));
                 formEntity.setTwId(rs.getInt("TW_ID"));
+                formEntity.setCheckType(rs.getString("check_type"));
+                formEntity.setTemplateName(rs.getString("templateName"));
+                formEntity.setTemplateId(rs.getString("templateId"));
+                formEntity.setProductPhase(rs.getString("PRODUCTPHASE"));
                 fromList.add(formEntity);
             }
             return ResultUtils.packData(fromList,"",true);

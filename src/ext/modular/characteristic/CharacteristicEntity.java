@@ -15,7 +15,8 @@ public class CharacteristicEntity extends BasicEntity {
     private int total;
     //严酷度加权系数
     private int coefficient;
-    private int ppmOrder;
+    private String checkType;                         //检验类型
+	private int ppmOrder;
 
     public String getName() {
         return name;
@@ -48,6 +49,14 @@ public class CharacteristicEntity extends BasicEntity {
     public void setPpmOrder(int ppmOrder) {
         this.ppmOrder = ppmOrder;
     }
+    
+    public String getCheckType() {
+		return checkType;
+	}
+
+	public void setCheckType(String checkType) {
+		this.checkType = checkType;
+	}
 
 
 }

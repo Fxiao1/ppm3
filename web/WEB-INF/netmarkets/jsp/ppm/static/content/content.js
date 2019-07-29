@@ -79,7 +79,7 @@ function treeviewInit(treeviewData){
     $("#tree").treeview('collapseAll',{ silent: true });//全部关闭
     $('#tree').treeview('expandNode', [ 0, { levels: 2, silent: true } ]);//展开首节点
 }
-
+//根据产品id获取该产品下的表单列表
 function getFormList(productId){
     $.ajax({
         url:"/Windchill/servlet/Navigation/form?actionName=getByProId&productId="+productId,
@@ -103,6 +103,7 @@ function getFormList(productId){
  * 初始化表
  * @param list 数据
  * @param rebuild 是否重建
+ * 初始化检验内容页面
  */
 function initTable(list,rebuild){
     var modelName=$("#info").find("input[name=modelName]").val();
@@ -142,6 +143,23 @@ function initTable(list,rebuild){
                     return '线缆';
                 }
             }},
+            { "data": "checkType","title" : "检验类型","render":function (data,type,row,meta) {
+                if("DZZJ"==data){
+                    return '电装自检';
+                }else if("DZHJ"==data){
+                    return '电装检验';
+                }else if("DZJY"==data){
+                    return '电装检验';
+                }else if("TSJY"==data){
+                    return '调试检验';
+                }else if("TSZJ"==data){
+                    return '调试自检';
+                }else if("DZJJ"==data){
+                    return '电装军检';
+                }else if("TSJJ"==data){
+                    return '调试军检';
+                }
+            }},
             { "data": "moduleName","title" : "名称","render":function(data){
                     return data==null?"":data;
             }},
@@ -164,7 +182,7 @@ function initTable(list,rebuild){
     }
     myformTable=$("#myform").DataTable(option);
 }
-
+//在instanceWrite.jsp页面进行数据加载
 function toWritePage(logo){
     var currentNode=$('#tree').treeview('getSelected')[0];
     var parentNode=$('#tree').treeview('getNode', currentNode.parentId);
@@ -193,7 +211,11 @@ function bindBtn() {
         }else{
             //型号id
             var modelId = currentNode.code;
+            //型号名
+            var modelType = currentNode.text;
+            
             $("#productForm").find("input[name=modelId]").val(modelId);
+            $("#productForm").find("input[name=model_type]").val(modelType);
             $("#productModal").modal("show");
         }
 
@@ -219,6 +241,7 @@ function bindBtn() {
             var parentNode=$('#tree').treeview('getNode', parentNodeId);
             var modelId=parentNode.code;
             $("#productForm").find("input[name=modelId]").val(modelId);
+            
 
             $("#productModal").modal("show");
         }
@@ -248,6 +271,7 @@ function bindBtn() {
     //增加表单定义的按钮
     $("#addProductBtn").click(function () {
         var currentNode=$('#tree').treeview('getSelected')[0];
+        
         if(currentNode&&currentNode.type=="product"){
             //获取型号名称
             var parentNode=$('#tree').treeview('getNode', currentNode.parentId);
@@ -284,6 +308,7 @@ function bindBtn() {
     //表单内容修改按钮
     $("#modifyProductBtn").click(function () {
         var currentNode=$('#tree').treeview('getSelected')[0];
+       
         if(currentNode&&currentNode.type=="product"){
             //获取型号名称
             var parentNode=$('#tree').treeview('getNode', currentNode.parentId);

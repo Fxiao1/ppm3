@@ -14,7 +14,7 @@ import java.util.List;
 @Service
 public class ProcedureLinkSer {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private String insertField = "id,creator,chara_name,pro_link_id,total,COEFFICIENT,ppm_order";
+    private String insertField = "id,creator,chara_name,pro_link_id,total,COEFFICIENT,check_type,ppm_order";
 
     /**
      * 获取工序与检验特性模板关系列表
@@ -41,11 +41,17 @@ public class ProcedureLinkSer {
                     procudurelinkEntity.setCreator(resultSet.getString("creator"));
                     procudurelinkEntity.setCreateTime(resultSet.getDate("createTime"));
                     procudurelinkEntity.setUpdateTime(resultSet.getTime("updateTime"));
-                    procudurelinkEntity.getTemplatelink().setId(resultSet.getInt("pro_link_id"));
-                    procudurelinkEntity.getCharacter().setName(resultSet.getString("chara_name"));
-                    procudurelinkEntity.getCharacter().setTotal(resultSet.getInt("total"));
-                    procudurelinkEntity.getCharacter().setCoefficient(resultSet.getInt("COEFFICIENT"));
+                    TemplatelinkEntity templateLink = new TemplatelinkEntity();
+                    templateLink.setId(resultSet.getInt("pro_link_id"));
+                    procudurelinkEntity.setTemplatelink(templateLink);
+                    CharacteristicEntity character = new CharacteristicEntity();
+                     character.setName(resultSet.getString("chara_name"));
+                     character.setTotal(resultSet.getInt("total"));
+                     character.setCoefficient(resultSet.getInt("COEFFICIENT"));
+                     character.setCheckType(resultSet.getString("CHECK_TYPE"));
+                    procudurelinkEntity.setCharacter(character);
                     procudurelinkEntity.setPpm_order(resultSet.getInt("ppm_order"));
+                    
                     templinkList.add(procudurelinkEntity);
                 }
             }
@@ -88,6 +94,7 @@ public class ProcedureLinkSer {
                     charac.setName(resultSet.getString("chara_name"));
                     charac.setTotal(resultSet.getInt("total"));
                     charac.setCoefficient(resultSet.getInt("COEFFICIENT"));
+                    charac.setCheckType(resultSet.getString("CHECK_TYPE"));
                     procedureLink.setCharacter(charac);
                     procedureLink.setPpm_order(resultSet.getInt("ppm_order"));
                 }
@@ -155,12 +162,13 @@ public class ProcedureLinkSer {
         try {
             connection = ConnectionUtil.getJdbcConnection();
             statement = connection.createStatement();
-            String sqlStr = String.format("INSERT INTO ppm_produce_charac_link(%s) VALUES(ppm_seq.nextval,'%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)",
+            String sqlStr = String.format("INSERT INTO ppm_produce_charac_link(%s) VALUES(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)",
                     insertField, procudurelinkEntity.getCreator(),
                     procudurelinkEntity.getCharacter().getName(),
                     procudurelinkEntity.getTemplatelink().getId(),
                     procudurelinkEntity.getCharacter().getTotal(),
-                    procudurelinkEntity.getCharacter().getCoefficient());
+                    procudurelinkEntity.getCharacter().getCoefficient(),
+                    procudurelinkEntity.getCharacter().getCheckType());
             statement.executeQuery(sqlStr);
 
         } catch (SQLException e) {
@@ -185,8 +193,8 @@ public class ProcedureLinkSer {
         PreparedStatement ps = null;
         try {
             connection = ConnectionUtil.getJdbcConnection();
-            String sqlStr = "UPDATE ppm_produce_charac_link SET (updateTime,TOTAL,COEFFICIENT,pro_link_id,chara_name)" +
-                    " = (SELECT ?,?,?,?,? FROM dual) where id=? AND DEL_FLAG=0";
+            String sqlStr = "UPDATE ppm_produce_charac_link SET (updateTime,TOTAL,COEFFICIENT,pro_link_id,chara_name,check_type)" +
+                    " = (SELECT ?,?,?,?,?,? FROM dual) where id=? AND DEL_FLAG=0";
             ps = connection.prepareStatement(sqlStr);
             Date updateTime = new Date(System.currentTimeMillis());
             ps.setDate(1, updateTime);
@@ -194,7 +202,8 @@ public class ProcedureLinkSer {
             ps.setInt(3, procudurelink.getCharacter().getCoefficient());
             ps.setInt(4, procudurelink.getTemplatelink().getId());
             ps.setString(5, procudurelink.getCharacter().getName());
-            ps.setInt(6, procudurelink.getId());
+            ps.setString(6, procudurelink.getCharacter().getCheckType());
+            ps.setInt(7, procudurelink.getId());
             return ps.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -209,7 +218,7 @@ public class ProcedureLinkSer {
 
     /**
      * 结果集封装成对象list
-     * @Author Fxiao
+     * @Author ln
      * @Description
      * @Date 21:15 2019/7/10
      * @param resultSet
@@ -220,14 +229,20 @@ public class ProcedureLinkSer {
         if (resultSet != null) {
             while (resultSet.next()) {
                 ProcedureLinkEntity procedurelinkEntity = new ProcedureLinkEntity();
-                procedurelinkEntity.setId(resultSet.getInt("id"));
-                procedurelinkEntity.setCreateTime(resultSet.getDate("createTime"));
-                procedurelinkEntity.setUpdateTime(resultSet.getDate("updateTime"));
+                procedurelinkEntity.setId(resultSet.getInt("ID"));
                 procedurelinkEntity.setCreator(resultSet.getString("creator"));
-                procedurelinkEntity.getCharacter().setName(resultSet.getString("name"));
-                procedurelinkEntity.getCharacter().setTotal(resultSet.getInt("total"));
-                procedurelinkEntity.getCharacter().setTotal(resultSet.getInt("coefficient"));
-                procedurelinkEntity.getTemplatelink().setId(resultSet.getInt("PRO_LINK_ID"));
+                procedurelinkEntity.setCreateTime(resultSet.getDate("createTime"));
+                procedurelinkEntity.setUpdateTime(resultSet.getTime("updateTime"));
+                TemplatelinkEntity templatelink=new TemplatelinkEntity();
+                templatelink.setId(resultSet.getInt("pro_link_id"));
+                procedurelinkEntity.setTemplatelink(templatelink);
+                CharacteristicEntity charac=new CharacteristicEntity();
+                charac.setName(resultSet.getString("chara_name"));
+                charac.setTotal(resultSet.getInt("total"));
+                charac.setCoefficient(resultSet.getInt("COEFFICIENT"));
+                charac.setCheckType(resultSet.getString("CHECK_TYPE"));
+                procedurelinkEntity.setCharacter(charac);
+                procedurelinkEntity.setPpm_order(resultSet.getInt("ppm_order"));
                 list.add(procedurelinkEntity);
             }
         }

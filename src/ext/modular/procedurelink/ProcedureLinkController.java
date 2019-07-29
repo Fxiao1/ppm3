@@ -1,7 +1,10 @@
 package ext.modular.procedurelink;
 
+import ext.modular.characteristic.CharacteristicEntity;
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
+import ext.modular.templatelink.TemplatelinkEntity;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -85,7 +88,10 @@ public class ProcedureLinkController {
                 jsonStr= ResultUtils.succ(procedureLink);
             }
         }
-        //修改检验特性与工序关系
+        /*
+        *修改检验特性与工序关系
+        *ln
+        **/
         else if ("post".equals(actionName)) {
             ProcedureLinkEntity procedureLink = new ProcedureLinkEntity();
             String id = request.getParameter("id");
@@ -93,13 +99,19 @@ public class ProcedureLinkController {
             String chara_name = request.getParameter("name");
             String coffucient = request.getParameter("coefficient");
             String total = request.getParameter("total");
-            log.info("id={},pro_link_id={},chara_name={},coffucient={},total={}"
-                    ,id, proLinkId, chara_name, coffucient, total);
+            String checkType = request.getParameter("checkType");
+            log.info("id={},pro_link_id={},chara_name={},coffucient={},total={},checkType={}"
+                    ,id, proLinkId, chara_name, coffucient, total,checkType);
             //准备检验特性关系数据
-            procedureLink.getCharacter().setName(chara_name);
-            procedureLink.getCharacter().setCoefficient(Integer.parseInt(coffucient));
-            procedureLink.getCharacter().setTotal(Integer.parseInt(total));
-            procedureLink.getTemplatelink().setId(Integer.parseInt(proLinkId));
+            TemplatelinkEntity templateLink = new TemplatelinkEntity();
+            templateLink.setId(Integer.parseInt(proLinkId));
+            CharacteristicEntity character = new CharacteristicEntity();
+            character.setName(chara_name);
+            character.setCoefficient(Integer.parseInt(coffucient));
+            character.setTotal(Integer.parseInt(total));
+            character.setCheckType(checkType);
+            procedureLink.setTemplatelink(templateLink);
+            procedureLink.setCharacter(character);
 
             //创建人
             wt.org.WTPrincipal current = SessionHelper.manager.getPrincipal();

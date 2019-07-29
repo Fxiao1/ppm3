@@ -53,6 +53,7 @@ public class CharacteristicSer {
                     CharacteristicEntity.setTotal(resultSet.getInt("total"));
                     CharacteristicEntity.setCoefficient(resultSet.getInt("coefficient"));
                     CharacteristicEntity.setPpmOrder(resultSet.getInt("ppm_order"));
+                    CharacteristicEntity.setCheckType(resultSet.getString("check_Type"));
                     characList.add(CharacteristicEntity);
                 }
             }

@@ -6,10 +6,11 @@ public class ProductEntity extends BasicEntity {
     //产品名称
     private String name;
     //
-    private String model_id;
+    private String model_id;//型号id
     //产品代号
     private String product_code;
-    private String model_type;
+    private String model_type; //型号名
+    
 
     public String getName() {
         return name;

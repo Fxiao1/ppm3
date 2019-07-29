@@ -1,0 +1,18 @@
+
+[
+  {
+    "procedureName": "生产准备",
+    "characName": ["外购件、元器件检查",
+      "印制电路板检查",
+      "导线检查"],
+    "procedurePPM": "10"
+  },
+  {
+    "procedureName": "三防涂层",
+    "characName": ["特性1",
+      "特性2",
+      "..."],
+    "procedurePPM": "8"
+  }
+]
+

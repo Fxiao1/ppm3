@@ -88,6 +88,7 @@
                     <form id="productForm" class="form-horizontal">
                         <%--型号id--%>
                         <input type="hidden" name="modelId" />
+                        <input type="hidden" name="model_type" />
                         <div class="form-group">
                             <label class="col-md-3 control-label">产品名称</label>
                             <div class="col-md-7">

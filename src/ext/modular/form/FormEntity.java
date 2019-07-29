@@ -18,8 +18,47 @@ public class FormEntity extends BasicEntity{
 	private String characName;                       //工序检验特性名称
 	private int characQuantity;                       //检验特性数量
 	private int kj;                                   //严酷度加权系数
+	private String  ProductPhase ;					  //产品阶段  ln
+	 private String checkType;                         //检验类型
+	 private String templateName;						//模板名称  ln
+	 private String templateId;						//模板id  ln
+	 
+	
+	
 
-    public String getName() {
+    public String getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(String templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
+
+	public String getCheckType() {
+		return checkType;
+	}
+
+	public void setCheckType(String checkType) {
+		this.checkType = checkType;
+	}
+
+	public String getProductPhase() {
+		return ProductPhase;
+	}
+
+	public void setProductPhase(String productPhase) {
+		ProductPhase = productPhase;
+	}
+
+	public String getName() {
         return name;
     }
 
@@ -131,23 +170,20 @@ public class FormEntity extends BasicEntity{
         this.kj = kj;
     }
 
-    @Override
-    public String toString() {
-        return "FormEntity{" +
-                "name='" + name + '\'' +
-                ", productId=" + productId +
-                ", characId=" + characId +
-                ", twId=" + twId +
-                ", ppmOrder=" + ppmOrder +
-                ", logo=" + logo +
-                ", batch='" + batch + '\'' +
-                ", quantity=" + quantity +
-                ", category='" + category + '\'' +
-                ", moduleName='" + moduleName + '\'' +
-                ", procedureName='" + procedureName + '\'' +
-                ", characName='" + characName + '\'' +
-                ", characQuantity=" + characQuantity +
-                ", kj=" + kj +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "FormEntity [name=" + name + ", productId=" + productId + ", characId=" + characId + ", twId=" + twId
+				+ ", ppmOrder=" + ppmOrder + ", logo=" + logo + ", batch=" + batch + ", quantity=" + quantity
+				+ ", category=" + category + ", moduleName=" + moduleName + ", procedureName=" + procedureName
+				+ ", characName=" + characName + ", characQuantity=" + characQuantity + ", kj=" + kj + ", ProductPhase="
+				+ ProductPhase + ", checkType=" + checkType + ", templateName=" + templateName + ", templateId="
+				+ templateId + "]";
+	}
+
+
+
+
+
+
+	
 }

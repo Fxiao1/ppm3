@@ -168,7 +168,7 @@ public class DatainstanceController {
         //所有的条目的容器
         List<DatainstanceEntity> AllDataInstance=new LinkedList<>();
         //当前工序下的数据
-        List<DatainstanceEntity>currentProcedure=new LinkedList<>();
+        List<DatainstanceEntity> currentProcedure=new LinkedList<>();
         boolean isNewProcedure=false;
         for (int i = 0; i < dataRowNum + 1; i++) {
             DatainstanceEntity ins=new DatainstanceEntity();

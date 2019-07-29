@@ -23,7 +23,7 @@ import java.util.List;
 @Service
 public class DatainstanceSer {
     private final Logger log = LoggerFactory.getLogger(this.getClass());
-    private String selectField = "id,createTime,updateTime,creator,product_id,chara_id,tw_id,ppm_order,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM";
+    private String selectField = "id,createTime,updateTime,creator,product_id,chara_id,tw_id,ppm_order,logo,batch,quantity,category,module_name,templateName,templateId,ProductPhase,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM";
     private String insertField =
             "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM,ppm_order";
 
@@ -47,6 +47,9 @@ public class DatainstanceSer {
                     de.setProcedureName(rs.getString("procedure_name"));
                     de.setCharacName(rs.getString("charac_name"));
                     de.setCharacQuantity(rs.getInt("charac_quantity"));
+                    de.setTemplateName(rs.getString("templateName"));
+                    de.setTemplateId(rs.getString("templateId"));
+                    de.setProductPhase(rs.getString("ProductPhase"));
                     de.setKj(rs.getInt("kj"));
                     de.setDefectNumber(rs.getInt("defect_number"));
                     de.setCheckType(rs.getString("check_type"));
@@ -94,6 +97,9 @@ public class DatainstanceSer {
                     de.setProcedureName(rs.getString("procedure_name"));
                     de.setCharacName(rs.getString("charac_name"));
                     de.setCharacQuantity(rs.getInt("charac_quantity"));
+                    de.setTemplateName(rs.getString("templateName"));
+                    de.setTemplateId(rs.getString("templateId"));
+                    de.setProductPhase(rs.getString("ProductPhase"));
                     de.setKj(rs.getInt("kj"));
                     de.setDefectNumber(rs.getInt("defect_number"));
                     de.setCheckType(rs.getString("check_type"));
@@ -180,9 +186,9 @@ public class DatainstanceSer {
                     //20-25
                     "product_count,charac_PPM,ppm_order,procedure_ppm,defect_number_item,characteristics_total" +
                     //26-26
-                    ",datains_mark" +
+                    ",datains_mark,templateName,templateId,ProductPhase" +
                     ") values(" +
-                    "ppm_seq.nextval,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,ppm_order_num_seq.nextval,?,?,?,?)";
+                    "ppm_seq.nextval,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,ppm_order_num_seq.nextval,?,?,?,?,?,?,?)";
             log.info("新增的sql为“{}”,下面将开始一一赋值", sqlStr);
             ps = conn.prepareStatement(sqlStr);
             WTPrincipal current = SessionHelper.manager.getPrincipal();
@@ -216,6 +222,9 @@ public class DatainstanceSer {
             ps.setInt(22, de.getDefectNumberItem());
             ps.setInt(23, de.getCharacteristicsTotal());
             ps.setInt(24, dataMark);
+            ps.setString(25, de.getTemplateName());
+            ps.setString(26, de.getTemplateName());
+            ps.setString(27, de.getTemplateId());
             int row = ps.executeUpdate();
             log.info("当前语句执行后修改行数为：" + row);
 
@@ -248,8 +257,8 @@ public class DatainstanceSer {
                     //9-15
                     "charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count," +
                     //16-19
-                    "charac_PPM,procedure_ppm,defect_number_item,characteristics_total)=" +
-                    "(SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? FROM dual )" +
+                    "charac_PPM,procedure_ppm,defect_number_item,characteristics_total,templateName,templateId,ProductPhase)=" +
+                    "(SELECT ?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,? FROM dual )" +
                     "WHERE id=?";
             ps = conn.prepareStatement(sqlStr);
             log.info("修改的sql为“{}”,下面将开始一一赋值", sqlStr);
@@ -276,8 +285,11 @@ public class DatainstanceSer {
             ps.setInt(18, de.getProcedurePpm());
             ps.setInt(19, de.getDefectNumberItem());
             ps.setInt(20, de.getCharacteristicsTotal());
+            ps.setString(21, de.getTemplateName());
+            ps.setString(22, de.getTemplateId());
+            ps.setString(23, de.getProductPhase());
 
-            ps.setInt(21, de.getId());
+            ps.setInt(24, de.getId());
 
             ps.executeUpdate();
         } catch (SQLException e) {

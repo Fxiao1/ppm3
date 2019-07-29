@@ -283,6 +283,8 @@
             $("#form1").prepend($("<input>").prop({"type":"hidden","name":"category","value":formItem.category}));
             //整机、模件、线缆名称
             $("#form1").prepend($("<input>").prop({"type":"hidden","name":"moduleName","value":formItem.moduleName}));
+            //产品阶段
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"ProductPhase","value":formItem.ProductPhase}));
 
             //封装数据成为一个对象，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}
@@ -305,19 +307,22 @@
             //当前页面正在进行什么操作？
             var pageType=$("#hideInfo").find("input[name=pageType]").val();
             var _input=$("<input>").addClass("form-control").css("width","100%");
-            /*var _select=$("<select></select>").addClass("form-control").css("width","100%");
+           /*  var _select=$("<select></select>").addClass("form-control").css("width","100%");
             var _option=$("<option></option>");
             _select
                 .append(_option.clone().css("display", "none"))
                 .append(_option.clone().text("自检").val("ZiJ"))
                 .append(_option.clone().text("互检").val("HuJ"))
                 .append(_option.clone().text("专检").val("ZhJ"))
-                .append(_option.clone().text("军检").val("JunJ"));*/
+                .append(_option.clone().text("军检").val("JunJ")); */
             var checkTypeObj={
-                "ZiJ":"自检",
-                "HuJ":"互检",
-                "ZhJ":"专检",
-                "JunJ":"军检"
+            		 "DZZJ":"电装自检",
+                     "DZHJ":"电装互检",
+                     "DZJY":"电装检验",
+                     "TSJY":"调试检验",
+                     "TSZJ":"调试自检",
+                     "DZJJ":"电装军检",
+                     "TSJJ":"调试军检"
             }
             $.each(a,function(j,k){
                 var le=k.length;
@@ -347,7 +352,10 @@
                             );
                             _row.children("td:eq(2)").prop("rowspan",le).append(
                                 _input.clone()
-                                    .prop({"type":"number","name":"productCount_"+rowNumber,"value":n.productCount})
+                                    .prop({"type":"number",
+                                    	"name":"productCount_"+rowNumber,
+                                    	"value":n.productCount,
+                                    	"min":0})
                                     .addClass("productCount")
                             );
                             _row.children("td:eq(3)").append(
@@ -369,17 +377,18 @@
                                     .prop({
                                         "type":"number",
                                         "name":"defectNumber_"+rowNumber,
-                                        "value":n.defectNumber
+                                        "value":n.defectNumber,
+                                        "min":0
                                     })
                                     .addClass("qxNumber")
                             ).append(
                                 _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                             );
-                            _row.children("td:eq(6)").prop("rowspan",le).append(
+                            _row.children("td:eq(6)").append(
                                 _input.clone().attr({
                                     "type":"hidden",
                                     "name":"checkType_"+rowNumber,
-                                    "value":n.checkType
+                                   "value":n.checkType
                                 })
 
                             ).append(
@@ -409,6 +418,9 @@
                             _row.children("td:eq(9)").append(
                                 _input.clone().prop({"type":"hidden","name":"kj_"+rowNumber}).val(n.kj)
                             );
+                            //ceshi
+                            
+                            
                             if(n.id&&pageType=="update"){
                                 var dataItemId=_input.clone().prop({"type":"hidden","name":"dataItemIds_"+rowNumber}).val(n.id);
                                 _row.children("td:eq(9)").append(dataItemId);
@@ -417,7 +429,7 @@
                             $("#form1").find("input[name=maxRowNumber]").val(rowNumber);
                             rowNumber++;
                         }else{
-                            var _row=$('<tr><td></td><td></td><td></td> <td class="hide Info"></td></tr>');
+                            var _row=$('<tr><td></td><td></td><td></td><td class="hide Info"></td></tr>');
                             _row.children("td:eq(0)").append(
                                 _input.clone().attr(
                                     {"type":"text","name":"characQuantity_"+rowNumber,"value":n.characQuantity,
@@ -437,7 +449,8 @@
                                     .prop({
                                         "type":"number",
                                         "name":"defectNumber_"+rowNumber,
-                                        "value":n.defectNumber
+                                        "value":n.defectNumber,
+                                        "min":0
                                     })
                                     .addClass("qxNumber").text(n.defectNumber)
                             ).append(
@@ -563,13 +576,26 @@
         }
 
 
-
+		//数据回写
         function showFormInfo(formItem) {
+        	 var checkTypeObj={
+            		 "DZZJ":"电装自检",
+                     "DZHJ":"电装互检",
+                     "DZJY":"电装检验",
+                     "TSJY":"调试检验",
+                     "TSZJ":"调试自检",
+                     "DZJJ":"电装军检",
+                     "TSJJ":"调试军检"
+            }
             var formInfo=$("#formInfo");
             formInfo.find("span[name=category]").text(formItem.category);
             formInfo.find("span[name=moduleName]").text(formItem.moduleName);
             formInfo.find("span[name=batch]").text(formItem.batch);
             formInfo.find("span[name=quantity]").text(formItem.quantity);
+            formInfo.find("span[name=checkType]").text(checkTypeObj[formItem.checkType]);
+            formInfo.find("span[name=ProductPhase]").text(formItem.ProductPhase);
+            
+            
         }
         function submitForm(){
             //“填写”操作之后，会将里面的数据拿到后台进行计算，得到计算结果之后的表单实体列表会返回json，并暂存到下面这个隐藏域里面，所以此时，
@@ -611,6 +637,10 @@
             $("#formRow").removeClass("hide");
             $("#infoView").addClass("hide");
         }
+        //检验明细页面检验类型改变时
+        function ChangeCheckType() {
+        	var checkType = $("#checkType").val();
+		}
     </script>
 </head>
 <body>
@@ -626,13 +656,15 @@
                 <h3 class="text-center">检验数据填写</h3>
             </div>
             <div class="row" id="formInfo">
-                <div class="col-md-1">产品型号:<span name="modalName"><%=request.getParameter("modalName2")%></span></div>
+                <div class="col-md-2">产品型号:<span name="modalName"><%=request.getParameter("modalName2")%></span></div>
                 <div class="col-md-2">产品代号:<span name="productCode"><%=request.getParameter("productCode")%></span></div>
                 <div class="col-md-2">产品名称:<span name="productName"><%=request.getParameter("productName")%></span></div>
-                <div class="col-md-1">类别:<span name="category"></span></div>
+                <div class="col-md-2">类别:<span name="category"></span></div>
                 <div class="col-md-2">整机/模件/线缆:<span name="moduleName"></span></div>
-                <div class="col-md-1">生产批次:<span name="batch"></span></div>
-                <div class="col-lg-1">生产数量:<span name="quantity"></span></div>
+                <div class="col-md-2">生产批次:<span name="batch"></span></div>
+                <div class="col-lg-2">生产数量:<span name="quantity"></span></div>
+                <div class="col-lg-2">检验类型:<span name="checkType"></span></div>
+                <div class="col-lg-2">产品阶段:<span name="ProductPhase"></span></div>
             </div>
             <div class="row">
                 <table id="instanceDataTable2" class="table table-bordered table-striped">
@@ -659,7 +691,22 @@
     </div>
 
     <div id="formRow" class="row hide" style="margin-top:15px;">
-        <h3>检验明细录入</h3>
+    	<div>
+    		<div style="float: left;">
+	        	<h3>检验明细录入</h3>
+	        </div>
+	        <div style="float: left;margin: 20px;">
+		         <select id="checktype" onchange="ChangeCheckType()">
+		         	<option value="DZZJ" selected="selected">电装自检</option>
+		         	<option value="DZJY">电装检验</option>
+		         	<option value="TSJY">调试检验</option>
+		         	<option value="DZHJ">电装互检</option>
+		         	<option value="TSZJ">调试自检</option>
+		         	<option value="DZJJ">电装军检</option>
+		         	<option value="TSJJ">调试军检</option>
+		         </select>
+		      </div>
+         </div>
         <form id="form1">
             <input type="hidden" name="logo" value="<%=request.getParameter("formLogo")%>">
             <input type="hidden" name="productId" value="<%=request.getParameter("productId")%>">

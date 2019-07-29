@@ -3,6 +3,11 @@ package ext.modular.calculate;
 import com.google.gson.Gson;
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
+import ext.modular.datainstance.DatainstanceEntity;
+import ext.modular.form.FormEntity;
+import ext.modular.product.ProductEntity;
+import ext.modular.product.ProductSer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -34,13 +39,27 @@ public class PPMCalculateDetailController {
         String jsonStr = "";
         String startStr = request.getParameter("startDate");
         String endStr = request.getParameter("endDate");
+        String TypeVal = request.getParameter("TypeVal");
+        System.out.println("接收到的字符串"+TypeVal);
+        int useTypeVal = Integer.parseInt(TypeVal);
+        System.out.println("转换成整型"+useTypeVal);
         String actionName = request.getParameter("actionName");
         System.out.println("actionName = " + actionName);
         String date = request.getParameter("dateTime");
         System.out.println("echars 统计中的 dataTime = " + date);
+        List<PPMCalculateDetailEntity> formList=null;
         if ("getForm".equals(actionName)){
             if (!"".equals(startStr) && !"".equals(endStr)) {
-                List<PPMCalculateDetailEntity> formList = getPPMCalculateDetailList(startStr,endStr);
+            	if(useTypeVal==0) {
+            		formList = getPPMCalculateDetailList(startStr,endStr);
+            	}else if(useTypeVal==1) {
+            		formList = getProductPPMCalculateDetailList(startStr,endStr);
+            	}else if(useTypeVal==2) {
+            		formList = getXHPPMCalculateDetailList(startStr,endStr);
+            	}else if(useTypeVal==3) {
+            		formList = getMJPPMCalculateDetailList(startStr,endStr);
+            	}
+                
                 if (formList != null) {
                     log.info("获取的列表长度为{}", String.valueOf(formList.size()));
                     jsonStr = ResultUtils.succ(formList, "获取表单列表");
@@ -112,7 +131,150 @@ public class PPMCalculateDetailController {
                 calculateDetailEntity.setProcedurePPM(service.getPPMCalculateByProcedureName(connection,name));//工序PPM
                 formList.add(calculateDetailEntity);
             }
+            System.out.println("工序列表信息"+formList.toString());
 
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(connection, null);
+        }
+        return formList;
+    }
+    
+    
+    /**
+     * LN
+     * 根据起始时间获取产品统计列表
+     * @param startStr
+     * @param endStr
+     * @return
+     */
+    public  List<PPMCalculateDetailEntity> getProductPPMCalculateDetailList(String startStr, String endStr){
+        List<PPMCalculateDetailEntity> formList = new LinkedList<PPMCalculateDetailEntity>();
+        try {
+            connection = ConnectionUtil.getJdbcConnection();
+            log.info("parameterName={ "+ startStr +" "+ endStr +" }");
+            PPMCalculateDetailSer service = new PPMCalculateDetailSer();
+            List<String> productIdList = service.getProductIdList(connection,startStr,endStr);//获取产品id列表
+            System.out.println("controller>>>>procedureNameList size() === " + productIdList.size());
+          //去重
+            List<String> listNew=new ArrayList<>();
+            Set set=new HashSet();
+            for (String str:productIdList) {
+                if(set.add(str)){
+                    listNew.add(str);
+                }
+            }
+            for (String proid: listNew) {
+                PPMCalculateDetailEntity calculateDetailEntity = new PPMCalculateDetailEntity();
+                ProductSer productSer = new ProductSer();
+                ProductEntity productEntity = productSer.getProductById(Integer.parseInt(proid));
+                calculateDetailEntity.setProductName(productEntity.getName());//产品名称
+                calculateDetailEntity.setProductPPM(service.getPPMCalculateByProductId(connection,Integer.parseInt(proid),startStr,endStr));//获取productppm
+
+                formList.add(calculateDetailEntity);
+            }
+            System.out.println("产品列表信息"+formList.toString());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(connection, null);
+        }
+        return formList;
+    }
+    
+    /**
+     * LN
+     * 根据起始时间获取型号统计列表
+     * @param startStr
+     * @param endStr
+     * @return
+     */
+    public  List<PPMCalculateDetailEntity> getXHPPMCalculateDetailList(String startStr, String endStr){
+        List<PPMCalculateDetailEntity> formList = new LinkedList<PPMCalculateDetailEntity>();
+        try {
+            connection = ConnectionUtil.getJdbcConnection();
+            log.info("parameterName={ "+ startStr +" "+ endStr +" }");
+            PPMCalculateDetailSer service = new PPMCalculateDetailSer();
+            List<String> modelList = service.getModelNameList(connection);//获取型号列表
+            System.out.println("controller>>>>procedureNameList size() === " + modelList.size());
+          /*//去重
+            List<String> listNew=new ArrayList<>();
+            Set set=new HashSet();
+            for (String str:modelList) {
+                if(set.add(str)){
+                    listNew.add(str);
+                }
+            }*/
+            for (String modelName: modelList) {
+                PPMCalculateDetailEntity calculateDetailEntity = new PPMCalculateDetailEntity();
+                calculateDetailEntity.setxHName(modelName);//产品名称
+                System.out.println(modelName);
+                calculateDetailEntity.setxHPPM(service.getPPMCalculateByXH(connection,modelName,startStr,endStr));//获取xhppm
+                formList.add(calculateDetailEntity);
+            }
+            System.out.println("产品列表信息"+formList.toString());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(connection, null);
+        }
+        return formList;
+    }
+    
+    
+    /**
+     * LN
+     * 根据起始时间获取模件统计列表
+     * @param startStr
+     * @param endStr
+     * @return
+     */
+    public  List<PPMCalculateDetailEntity> getMJPPMCalculateDetailList(String startStr, String endStr){
+        List<PPMCalculateDetailEntity> formList = new LinkedList<PPMCalculateDetailEntity>();
+        try {
+            connection = ConnectionUtil.getJdbcConnection();
+            log.info("parameterName={ "+ startStr +" "+ endStr +" }");
+            PPMCalculateDetailSer service = new PPMCalculateDetailSer();
+            List<String> modelList = service.getModelNameList(connection);//获取型号列表
+            System.out.println("controller>>>>modelList size() === " + modelList.size());
+            System.out.println("modelList:型号名"+modelList.toString());
+            
+            for(String modelname:modelList) {//遍历型号名集合
+            	List<ProductEntity> productList = service.getProListByModelName(connection,modelname);//根据型号名查产品集合
+            	//便利产品集合，获取产品id
+            	for(ProductEntity proentity:productList) {
+            		//根据产品id查询表单数据列表
+            		List<FormEntity> formEntityList = service.getFormListByProId(connection, proentity.getId());
+            		//便利表单列表拿去有用信息
+            		for(FormEntity data:formEntityList) {
+            			
+            			PPMCalculateDetailEntity calculateDetailEntity = new PPMCalculateDetailEntity();
+            			//型号名
+            			calculateDetailEntity.setxHName(modelname);
+            			//产品名
+            			calculateDetailEntity.setProductName(proentity.getName());
+            			//模件名
+            			calculateDetailEntity.setmJName(data.getModuleName());
+            			
+            			//获取模件ppm
+            			int mjPPM = service.getPPMCalculateBymj(connection, data.getLogo(), startStr, endStr);
+            			
+            			calculateDetailEntity.setmJPPM(mjPPM);
+            			
+            			formList.add(calculateDetailEntity);
+            			
+            		}
+            	}
+            }
+          
+            System.out.println("模件列表信息"+formList.toString());
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         } catch (SQLException e) {

@@ -12,9 +12,6 @@
         <link rel="stylesheet" type="text/css" href="../static/bootstrap.css"/>
         <script type="text/javascript" src="../static/jquery.min.js"></script>
         <script type="text/javascript" src="../static/bootstrap.js"></script>
-        <script type="text/javascript"
-                src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
-        </script>
         <script type="text/javascript" >
             $(function () {
                 //纠错，隐藏域的一些基础信息的纠错
@@ -58,19 +55,8 @@
                     }
                 })
             }
-			//ln 如果有form标识则初始化检验内容配置页面
+
             function updataTabaleInit(data) {
-				
-            	 var checkTypeObj={
-                         "DZZJ":"电装自检",
-                         "DZHJ":"电装互检",
-                         "DZJY":"电装检验",
-                         "TSJY":"调试检验",
-                         "TSZJ":"调试自检",
-                         "DZJJ":"电装军检",
-                         "TSJJ":"调试军检"
-                     }
-            	 
                 $("#tempForm").find("tbody").find("tr").remove();
                 var num=1;
                 var orderNum=50;
@@ -78,32 +64,12 @@
                 var quantity=data[0].quantity;
                 var moduleName=data[0].moduleName;
                 var category=data[0].category;
-                var checkType=data[0].checkType;
-                var ProductPhase=data[0].ProductPhase;
-                var templateId=data[0].templateId
-                alert(templateId);
-                var pageType=$("#hideInfo").find("input[name=pageType]").val();
-                if(pageType!="add"){
-                	//下拉菜单功能禁用
-                	$("#modelList").attr("disabled","disabled");
-                	
-                	//生成表单按钮显示
-                	$("#createFormList").attr("style","display:none;");
-                    $("#myFormEntity").find("input[name=batch]").attr("value",batch);
-                }else{
-                	//下拉菜单的禁用功能移除
-                	$("#modelList").removeAttr("disabled");
-                	//生成表单按钮隐藏
-                	$("#createFormList").attr("style","display:block;");
-                }
+                $("#myFormEntity").find("input[name=batch]").attr("value",batch);
                 $("#myFormEntity").find("input[name=quantity]").attr("value",quantity);
                 $("#myFormEntity").find("input[name=moduleName]").attr("value",moduleName);
                 $("#myFormEntity").find("select[name=category]").val(category);
-                $("#myFormEntity").find("input[name=ProductPhase]").attr("value",ProductPhase);
-                
-                //ln
                 $.each(data,function (i,n) {
-                    var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control"></td><td><input type="number"class="form-control"></td><td></td><td></td><td></td><td></td></tr>';
+                    var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control"></td><td><input type="number"class="form-control"></td><td></td><td></td><td></td></tr>';
                     var _tr=$(_trStr);
                     _tr.find("td:eq(0)").text(num++);
                     _tr.find("td:eq(1)").text(n.procedureName);
@@ -113,7 +79,6 @@
                     _tr.find("td:eq(5)").text(n.twId).addClass("hide");
                     _tr.find("td:eq(6)").addClass("hide");
                     _tr.find("td:eq(7)").text(orderNum++).addClass("hide");
-                    _tr.find("td:eq(8)").text(checkTypeObj[n.checkType]);
                     $("#tempForm>tbody").append(_tr);
                 })
             }
@@ -143,7 +108,7 @@
                     }
                 });
             }
-            //获取工序及其工序特性     获取生成表单数据
+            //获取工序及其工序特性
             function getProcedure(templateId) {
                 $.ajax({
                     url:"/Windchill/servlet/Navigation/procedure?actionName=getByTemplate&templateId="+templateId,
@@ -162,29 +127,14 @@
                     }
                 });
             }
-            //表单表的初始化  ln   表单数据填写
+            //表单表的初始化
             function tableInit(procedureList) {
-            	
                 $("#tempForm").find("tbody").find("tr").remove();
-                //增加模板名
-                //当前选中的模板id
-                var templateId=$("#modelList").val();
-                //当前选中的模板名
-                var templateName=$("#modelList option:selected").text();
                 var num=1;
                 var orderNum=50;
-                var checkTypeObj={
-                        "DZZJ":"电装自检",
-                        "DZHJ":"电装互检",
-                        "DZJY":"电装检验",
-                        "TSJY":"调试检验",
-                        "TSZJ":"调试自检",
-                        "DZJJ":"电装军检",
-                        "TSJJ":"调试军检"
-                    }
                 $.each(procedureList,function (i,n) {
                     $.each(n.characList,function (j,m) {
-                        var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control" min=0></td><td><input type="number"class="form-control" min=0></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+                        var _trStr='<tr><td></td><td></td><td></td><td><input type="number"class="form-control" min=0></td><td><input type="number"class="form-control" min=0></td><td></td><td></td><td></td></tr>';
                         var _tr=$(_trStr);
                         _tr.find("td:eq(0)").text(num++);
                         _tr.find("td:eq(1)").text(n.name);
@@ -194,24 +144,12 @@
                         _tr.find("td:eq(5)").text(n.id).addClass("hide");
                         _tr.find("td:eq(6)").text(m.id).addClass("hide");
                         _tr.find("td:eq(7)").text(m.id).text(orderNum++).addClass("hide");
-                        _tr.find("td:eq(8)").text(checkTypeObj[m.checkType]);
-                        _tr.find("td:eq(9)").text(templateName).addClass("hide");
-                        _tr.find("td:eq(10)").text(templateId).addClass("hide");
                         $("#tempForm").find("tbody").append(_tr);
                     });
                 })
             }
-            //自定义form提交   ln 检验内容配置页面表单提交
+            //自定义form提交
             function formSubmit() {
-            	 var checkTypeObj={
-                    	 "电装自检":"DZZJ",
-                         "电装互检":"DZHJ",
-                         "电装检验":"DZJY",
-                         "调试检验":"TSJY",
-                         "调试自检":"TSZJ",
-                         "电装军检":"DZJJ",
-                         "调试军检":"TSJJ"
-                     }
                 //产品id
                 var productId=$("input[name=productId]").val();
                 //生产批次
@@ -230,20 +168,13 @@
                 var charaList=$("#tempForm>tbody>tr");
                 var formLogo=$("#hideInfo").find("input[name=formLogo]").val();
                 var pageType=$("#hideInfo").find("input[name=pageType]").val();
-                 //  产品阶段
-                var ProductPhase=$("input[name=ProductPhase]").val();
-                 //模板名称
-                 var templateName=$("#modelList option:selected").text();
-                 //模板id
-                 var templateId=$("#modelList option:selected").text();
                 var _url="";
-                if(pageType!=="add"){
-                    _url="/Windchill/servlet/Navigation/form?actionName=update&logo="+formLogo;
+                if(pageType!="add"){
+                    _url="/Windchill/servlet/Navigation/form?actionName=update";
                 }else{
                     _url="/Windchill/servlet/Navigation/form?actionName=post";
                 }
-                var characQuantityIsZero=false;
-                //ln
+
                 $.each(charaList,function (i, n) {
                     var chrarc=$(n);
                     var itemData={};
@@ -252,32 +183,17 @@
                     itemData.batch=batch;
                     itemData.quantity=quantity;
                     itemData.category=category;
-                    itemData.ProductPhase=ProductPhase;
                     itemData.twId=chrarc.find("td:eq(5)").text();
                     itemData.procedureName=chrarc.find("td:eq(1)").text();
                     itemData.characName=chrarc.find("td:eq(2)").text();
-                    if(pageType=="add"){
-                    	itemData.templateName=templateName;
-                        itemData.templateId=templateId;
-                    }
-                    
-                    if(chrarc.find("td:eq(3)>input").val()=="0"){
-                        characQuantityIsZero=true;
-                        return false;
-                    }
                     itemData.characQuantity=chrarc.find("td:eq(3)>input").val();
                     itemData.kj=chrarc.find("td:eq(4)>input").val();
                     itemData.ppmOrder=chrarc.find("td:eq(7)").text();
-                    itemData.checkType=checkTypeObj[chrarc.find("td:eq(8)").text()];
                     if(formLogo){
                         itemData.logo=formLogo;
                     }
                     _data.push(itemData);
                 });
-                if(characQuantityIsZero){
-                    alert("检验特性数量均不能为0！");
-                    return false;
-                }
                 var dataJsonStr=JSON.stringify(_data);
                 $.ajax({
                     url:_url,
@@ -298,7 +214,7 @@
 
 
             }
-            //获取所有的工序，增加到下拉框里面 （生成表单后新增或修改时获取工序）
+            //获取所有的工序，增加到下拉框里面
             function addProcedureList(defaultOptionValue,defaultOptionName) {
                 $.ajax({
                     url:"/Windchill/servlet/Navigation/procedure?actionName=get",
@@ -354,7 +270,6 @@
 
             //绑定按钮
             function bindBtn(){
-            	//生成表单  ln
                 $("#createFormList").click(function () {
                     var templateId=$("#modelList").val();
                     var tempDataTr=$("#tempForm>tbody>tr");
@@ -491,10 +406,8 @@
         <div id="hideInfo">
             <input type="hidden" name="formLogo" value="<%=request.getParameter("logo")%>">
             <input type="hidden" name="productId" value="<%=request.getParameter("productId")%>">
-            <input type="hidden" name="pageType" value="<%=request.getParameter("pageType")%>">
 
         </div>
-        <!-- 新增表单定义页面初始化 -->
         <div class="container-fluid">
             <div class="row">
                 <div class="col-lg-12">
@@ -507,7 +420,7 @@
                             </p>
                             <label class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-4">填写模板</label>
                             <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8">
-                                <select id="modelList" name="templateName" class="form-control">
+                                <select id="modelList" class="form-control">
 
                                 </select>
                             </div>
@@ -549,13 +462,7 @@
                                 <input name="moduleName" class="form-control" type="text"/>
                             </div>
                         </div>
-                        
-						<div class="form-group">
-                            <label class="control-label col-lg-2 col-md-2 col-sm-2 col-xs-4">产品阶段</label>
-                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-8">
-                                <input name="ProductPhase" type="text" class="form-control"/>
-                            </div>
-                        </div>
+
 
                     </form>
                 </div>
@@ -580,8 +487,6 @@
                                 <th class="hide">工序id</th>
                                 <th class="hide">特性id</th>
                                 <th class="hide">排序数字</th>
-                                <!-- ln -->
-                                <th>检验类型</th>
                             </tr>
                         </thead>
                             <tbody>

@@ -21,16 +21,14 @@
 	<link rel="stylesheet" type="text/css" href="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/dataTables.bootstrap.min.css"/>
 	<script type="text/javascript" src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/jquery.dataTables.min.js"></script>
     <script type="text/javascript" src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/dataTables.bootstrap.min.js"></script>
-    <script type="text/javascript"
-            src="${pageContext.request.contextPath}/netmarkets/jsp/ppm/static/modifyBtnClass.js" >
-    </script>
+
 
 </head>
 <body>
     <div class="container-fluid">
         <div class="row">
             <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3">
-				<h3>模板列表</h3>
+
                 <div class="well">
                     <div class="btn-group" >
                         <button class="btn btn-info" type="button" id="addTempBtn" >新增</button>
@@ -57,7 +55,7 @@
                             <th>序号</th>
                             <th>工序名称</th>
                             <th>工序检验特性</th>
-                            <th>检验类型</th> 
+                            <th>检验特性数量</th>
                             <th>严酷度加权系数</th>
                             <th>数据类型</th>
                         </tr>
@@ -81,7 +79,6 @@
 
                     <div class="modal-body">
                         <form class="form-horizontal" id="modelForm">
-                            <input type="hidden" name="currentOrder" value="100">
                             <div class="form-group">
                                 <label  class="col-md-3 control-label">模板名</label>
                                 <div class="col-md-7">
@@ -157,22 +154,7 @@
                             <div class="form-group">
                                 <label  class="col-md-3 control-label">严酷度加权系数</label>
                                 <div class="col-md-7">
-                                    <input class="form-control" type="number" placeholder="点击输入" name="coefficient" min=0 >
-                                </div>
-                            </div>
-                            <!-- ln -->
-                            <div class="form-group">
-                                <label  class="col-md-3 control-label">检验类型</label>
-                                <div class="col-md-7">
-                                	<select name="checkType">
-                                		<option selected="selected" value="DZZJ">电装自检</option>
-                                		<option value="DZHJ">电装互检</option>
-                                		<option value="DZJY">电装检验</option>
-                                		<option value="TSJY">调试检验</option>
-                                		<option value="TSZJ">调试自检</option>
-                                		<option value="DZJJ">电装军检</option>
-                                		<option value="TSJJ">调试军检</option>
-                                	</select>
+                                    <input class="form-control" type="number" placeholder="点击输入" name="coefficient" >
                                 </div>
                             </div>
                         </form>

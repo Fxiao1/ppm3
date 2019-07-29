@@ -23,6 +23,9 @@ public class DatainstanceEntity extends BasicEntity {
     private int characQuantity;                       //检验特性数量
     private int kj;                                   //严酷度加权系数
     private String checkType;                         //检验类型
+    private String  ProductPhase ;					  //产品阶段  ln
+    private String templateName;                      //模板名   ln
+    private String templateId;						//模板id  ln
     private String checkPerson;                       //检验人
     private String checkPersonId;                     //检验人ID
     private Date checkTime;                           //检验时间
@@ -30,9 +33,36 @@ public class DatainstanceEntity extends BasicEntity {
     private int characPPM;                            //工序检验特性PPM
     private int procedurePpm;                          //工序ppm
     private int characteristicsTotal;                 //工序检验特性总数
+    
+    
+    
 
 
-    public int getDataInsMark() {
+    public String getTemplateId() {
+		return templateId;
+	}
+
+	public void setTemplateId(String templateId) {
+		this.templateId = templateId;
+	}
+
+	public String getProductPhase() {
+		return ProductPhase;
+	}
+
+	public void setProductPhase(String productPhase) {
+		ProductPhase = productPhase;
+	}
+
+	public String getTemplateName() {
+		return templateName;
+	}
+
+	public void setTemplateName(String templateName) {
+		this.templateName = templateName;
+	}
+
+	public int getDataInsMark() {
         return dataInsMark;
     }
 
@@ -224,29 +254,19 @@ public class DatainstanceEntity extends BasicEntity {
         this.characPPM = characPPM;
     }
 
-    @Override
-    public String toString() {
-        return "DatainstanceEntity{" +
-                "productId=" + productId +
-                ", charaId=" + charaId +
-                ", twId=" + twId +
-                ", ppmOrder=" + ppmOrder +
-                ", logo=" + logo +
-                ", batch='" + batch + '\'' +
-                ", quantity=" + quantity +
-                ", category='" + category + '\'' +
-                ", moduleName='" + moduleName + '\'' +
-                ", procedureName='" + procedureName + '\'' +
-                ", defectNumber=" + defectNumber +
-                ", characName='" + characName + '\'' +
-                ", characQuantity=" + characQuantity +
-                ", kj=" + kj +
-                ", checkType='" + checkType + '\'' +
-                ", checkPerson='" + checkPerson + '\'' +
-                ", checkPersonId='" + checkPersonId + '\'' +
-                ", checkTime=" + checkTime +
-                ", productCount=" + productCount +
-                ", characPPM=" + characPPM +
-                '}';
-    }
+	@Override
+	public String toString() {
+		return "DatainstanceEntity [productId=" + productId + ", charaId=" + charaId + ", twId=" + twId + ", ppmOrder="
+				+ ppmOrder + ", logo=" + logo + ", dataInsMark=" + dataInsMark + ", batch=" + batch + ", quantity="
+				+ quantity + ", category=" + category + ", moduleName=" + moduleName + ", procedureName="
+				+ procedureName + ", defectNumber=" + defectNumber + ", defectNumberItem=" + defectNumberItem
+				+ ", characName=" + characName + ", characQuantity=" + characQuantity + ", kj=" + kj + ", checkType="
+				+ checkType + ", ProductPhase=" + ProductPhase + ", templateName=" + templateName + ", templateId="
+				+ templateId + ", checkPerson=" + checkPerson + ", checkPersonId=" + checkPersonId + ", checkTime="
+				+ checkTime + ", productCount=" + productCount + ", characPPM=" + characPPM + ", procedurePpm="
+				+ procedurePpm + ", characteristicsTotal=" + characteristicsTotal + "]";
+	}
+
+
+    
 }

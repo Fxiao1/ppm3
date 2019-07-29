@@ -1,21 +1,22 @@
 package ext.modular.model;
 
+import ext.modular.product.ProductEntity;
+import ext.modular.product.ProductSer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import wt.fc.PersistenceHelper;
+import wt.fc.QueryResult;
+import wt.fc.ReferenceFactory;
+import wt.pdmlink.PDMLinkProduct;
+import wt.query.ClassAttribute;
+import wt.query.QuerySpec;
+import wt.util.WTException;
+
 import java.sql.Connection;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
-import ext.modular.product.ProductEntity;
-import ext.modular.product.ProductSer;
-import wt.fc.ReferenceFactory;
-import wt.org.WTPrincipal;
-import wt.pdmlink.PDMLinkProduct;
-import wt.session.SessionHelper;
-import wt.util.WTException;
 
 
 /**
@@ -25,10 +26,7 @@ import wt.util.WTException;
  * @date 2019/6/10
  */
 @Service
-public class ModelSer {
-	
-	private final Logger log= LoggerFactory.getLogger(this.getClass());
-    ProductSer ser=new ProductSer();
+public class ModelSer_22 {
     /**
      * 根据型号列表获取产品列表
      * @Author renkai
@@ -37,7 +35,7 @@ public class ModelSer {
      * @param modelList
      * @return java.util.List<ext.modular.model.ModelEntity>
      **/
-	
+    ProductSer ser=new ProductSer();
     public List<ModelEntity> getModel(List<ModelEntity> modelList, Connection conn){
         List<ModelEntity> List=new LinkedList<ModelEntity>();
         for (ModelEntity modelEntity:modelList) {
@@ -57,9 +55,18 @@ public class ModelSer {
      * @return java.util.ArrayList
      **/
     public  List getProduct() throws WTException {
-    	WTPrincipal principal = SessionHelper.getPrincipal();
-        List list = AllProduct.getAllProduct(principal, false);
-       
+        ArrayList list = new ArrayList();
+        wt.session.SessionServerHelper.manager.setAccessEnforced(true);
+        QuerySpec qs = new QuerySpec(PDMLinkProduct.class);
+        qs.setAdvancedQueryEnabled(true);
+        ClassAttribute ca = new ClassAttribute(PDMLinkProduct.class, "thePersistInfo.theObjectIdentifier.id");
+        Logger log= LoggerFactory.getLogger(ModelSer.class);
+        log.debug("getProductListForSelect qs===" + qs);
+        QueryResult qr1 = PersistenceHelper.manager.find(qs);
+        while (qr1.hasMoreElements())
+        {
+            list.add(qr1.nextElement());
+        }
         List modelList=new LinkedList();
         for (int i = 0; i < list.size(); i++) {
             PDMLinkProduct pdmLinkProduct= (PDMLinkProduct) list.get(i);

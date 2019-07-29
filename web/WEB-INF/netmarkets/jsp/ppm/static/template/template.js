@@ -206,7 +206,7 @@ function bindBtns(){
                 if(result.success){
                     var charac=result.data.character;
                     $("#characForm").find("input[name=name]").val(charac.name);
-                    $("#characForm").find("input[name=total]").val(charac.total);
+                    $("#characForm").find("select").val(charac.checkType);
                     $("#characForm").find("input[name=coefficient]").val(charac.coefficient);
                 }else{
                     alert(result.message);
@@ -533,8 +533,17 @@ function getProcedureByTemplate(){
         data:_data,
         dataType:"json",
         success:function(result){
-            if(result.success){
+            if(result.success){//电装自检，电装互检，电装检验，调试检验，调试自检，电装军检，调试军检
                 $("#procedureList").find("tr:not(:first)").remove();
+                var checkTypeObj={
+                        "DZZJ":"电装自检",
+                        "DZHJ":"电装互检",
+                        "DZJY":"电装检验",
+                        "TSJY":"调试检验",
+                        "TSZJ":"调试自检",
+                        "DZJJ":"电装军检",
+                        "TSJJ":"调试军检"
+                    }
                 $.each(result.data,function (i, n) {
                     var _tr2=$("<tr> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> <td></td> </tr>");
                     _tr2.prop("id",n.id);
@@ -550,7 +559,7 @@ function getProcedureByTemplate(){
                         _tr.find("td:eq(0)").text(++indexNum);
                         _tr.find("td:eq(1)").text(n.name);
                         _tr.find("td:eq(2)").text(m.name);
-                        _tr.find("td:eq(3)").text(m.total);
+                        _tr.find("td:eq(3)").text(checkTypeObj[m.checkType]);
                         _tr.find("td:eq(4)").text(m.coefficient);
                         _tr.find("td:eq(5)").text(m.id).addClass("hide").addClass("_characId");
 						_tr.find("td:eq(6)").text("charac").addClass("hide").addClass("_type");
