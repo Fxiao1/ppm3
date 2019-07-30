@@ -51,7 +51,7 @@ public class ProcedureLinkSer {
                      character.setCheckType(resultSet.getString("CHECK_TYPE"));
                     procudurelinkEntity.setCharacter(character);
                     procudurelinkEntity.setPpm_order(resultSet.getInt("ppm_order"));
-                    
+
                     templinkList.add(procudurelinkEntity);
                 }
             }
@@ -292,6 +292,43 @@ public class ProcedureLinkSer {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    /**
+     * 检查重复，重复标准：工序名、特性名、检验类型均相同的视为重复
+     * @Author Fxiao
+     * @Description
+     * @Date 14:42 2019/7/30
+     * @param procedurelink
+     * @return boolean true:有重复；false：无重复
+     **/
+    public boolean checkRepeat(ProcedureLinkEntity procedurelink,String procedureName){
+        Connection connection = null;
+        PreparedStatement ps=null;
+        boolean hasRepeat=false;
+        try {
+            connection = ConnectionUtil.getConnection();
+            String characName=procedurelink.getCharacter().getName();
+            String checkType=procedurelink.getCharacter().getCheckType();
+            String sqlStr ="SELECT COUNT(a.id) item_count FROM ppm_produce_charac_link a ,PPM_TEMPLATE_WORK_LINK b " +
+                    "WHERE a.PRO_LINK_ID=b.ID " +
+                    "AND b.TW_NAME=? AND a.CHARA_NAME=? AND a.CHECK_TYPE=?";
+            log.info("正在检查特性是否重复,待检查数据的工序名={}，特性名={}，检查类型={}。将执行sql={}",
+                    procedureName,characName,checkType,sqlStr);
+            ps=connection.prepareStatement(sqlStr);
+            ps.setString(1,procedureName);
+            ps.setString(2,characName);
+            ps.setString(3,checkType);
+            ResultSet resultSet2=ps.executeQuery();
+            if(resultSet2!=null){
+                resultSet2.next();
+                int itemCount=resultSet2.getInt("item_count");
+                hasRepeat=itemCount>0;
+                log.info("itemCount={},hasRepeat={}",itemCount,hasRepeat);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return hasRepeat;
     }
 
 

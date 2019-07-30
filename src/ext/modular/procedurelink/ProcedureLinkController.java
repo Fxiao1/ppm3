@@ -4,7 +4,7 @@ import ext.modular.characteristic.CharacteristicEntity;
 import ext.modular.common.ConnectionUtil;
 import ext.modular.common.ResultUtils;
 import ext.modular.templatelink.TemplatelinkEntity;
-
+import ext.modular.templatelink.TemplatelinkSer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -107,7 +107,7 @@ public class ProcedureLinkController {
             templateLink.setId(Integer.parseInt(proLinkId));
             CharacteristicEntity character = new CharacteristicEntity();
             character.setName(chara_name);
-            character.setCoefficient(Integer.parseInt(coffucient));
+            character.setCoefficient(StringUtils.isEmpty(coffucient)?0:Integer.parseInt(coffucient));
             character.setTotal(Integer.parseInt(total));
             character.setCheckType(checkType);
             procedureLink.setTemplatelink(templateLink);
@@ -116,11 +116,23 @@ public class ProcedureLinkController {
             //创建人
             wt.org.WTPrincipal current = SessionHelper.manager.getPrincipal();
             procedureLink.setCreator(current.getName());
+
+
             //n
             if (StringUtils.isEmpty(id)) {
-                //新增
-                ser.addProcedureLink(procedureLink);
-                jsonStr = ResultUtils.succ(null, "新增成功");
+                //检查是否已有数据
+                boolean haseRepeat=false;
+                TemplatelinkSer templatelinkSer=new TemplatelinkSer();
+                TemplatelinkEntity templatelink2=templatelinkSer.get(procedureLink.getTemplatelink().getId());
+                haseRepeat=ser.checkRepeat(procedureLink,templatelink2.getProcedureEntity().getName());
+                if(haseRepeat){
+                    jsonStr=ResultUtils.error("新增失败，已存在相同数据");
+                }else{
+                    //新增
+                    ser.addProcedureLink(procedureLink);
+                    jsonStr = ResultUtils.succ(null, "新增成功");
+                }
+
             } else {
                 procedureLink.setId(Integer.parseInt(id));
                 int updateRow=ser.updateProcedureLink(procedureLink);
