@@ -8,7 +8,8 @@ $(function(){
     bindBtn();
     bindEvent();
     //初始化表格
-    initTable([],false);
+    myformTable=null;
+    initTable([]);
 
 
 })
@@ -62,6 +63,8 @@ function treeviewInit(treeviewData){
                 var currentNode=$("#tree").treeview('collapseAll',{ silent: true });//关闭所有节点
                 var currentNodeId=data.nodeId;
                 $('#tree').treeview('expandNode', [ currentNodeId, { levels: 2, silent: true } ]);//展开当前节点
+                //关闭右侧的表格
+                initTable([]);
             }else if("product"==data.type){
                 var productId=data.id;
                 getFormList(productId);
@@ -87,7 +90,7 @@ function getFormList(productId){
         dataType:'json',
         success:function (result) {
             if(result.success){
-                initTable(result.data,true);
+                initTable(result.data);
             }else{
                 alert(result.message);
             }
@@ -102,10 +105,9 @@ function getFormList(productId){
 /**
  * 初始化表
  * @param list 数据
- * @param rebuild 是否重建
  * 初始化检验内容页面
  */
-function initTable(list,rebuild){
+function initTable(list){
     var modelName=$("#info").find("input[name=modelName]").val();
     var modalCode=$("#info").find("input[name=modalCode]").val();
     var productName=$("#info").find("input[name=productName]").val();
@@ -121,24 +123,12 @@ function initTable(list,rebuild){
     	buttonGroup.removeClass("hide").addClass("show");
     }
 
-
-    if(rebuild){
-        myformTable.destroy()
+    if(myformTable){
+        myformTable.destroy();
     }
     var option={
         data:list,
         "columns": [
-            /*{ "data": null ,
-                "title":"型号代号",
-                "width":"8.3%",
-                "render":function () {
-                    return modalCode.length>12?modalCode.substring(0,10)+"…":modalCode;
-                },
-                "createdCell":function(cell,cellData,rowData,rowIndex,colIndex){
-                    $(cell).attr("title",modalCode);
-                }
-
-            },*/
             { "data": null ,"title":"产品型号","render":function () {
                     return modelName;
             }},
@@ -156,23 +146,6 @@ function initTable(list,rebuild){
                 }
             }},
             { "data": "ProductPhase" ,"title":"产品阶段"},
-           /* { "data": "checkType","title" : "检验类型","render":function (data,type,row,meta) {
-                if("DZZJ"==data){
-                    return '电装自检';
-                }else if("DZHJ"==data){
-                    return '电装检验';
-                }else if("DZJY"==data){
-                    return '电装检验';
-                }else if("TSJY"==data){
-                    return '调试检验';
-                }else if("TSZJ"==data){
-                    return '调试自检';
-                }else if("DZJJ"==data){
-                    return '电装军检';
-                }else if("TSJJ"==data){
-                    return '调试军检';
-                }
-            }},*/
             { "data": "moduleName","title" : "名称","render":function(data){
                     return data==null?"":data;
             }},
