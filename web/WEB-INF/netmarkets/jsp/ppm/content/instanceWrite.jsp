@@ -87,8 +87,15 @@
                 num=num==""?"0":num;
                 reg=/^\d+$/;
                 if(reg.test(num)){
-                    $(n).closest("td").removeClass("has-error");
-                    $(n).prop("title","");
+                    if($(n).hasClass("productCount")&&num=="0"){
+                        $(n).closest("td").addClass("has-error");
+                        $(n).prop("title","本工序输入产品数必须大于零");
+                        hasError=true;
+                    }else{
+                        $(n).closest("td").removeClass("has-error");
+                        $(n).prop("title","");
+                    }
+
                 }else{
                     $(n).closest("td").addClass("has-error");
                     $(n).prop("title","该数字框内必须是正整数");
@@ -384,7 +391,7 @@
                             ).append(
                                 _input.clone().prop({"type":"hidden","name":"rowNumber","value":rowNumber})
                             );
-                            _row.children("td:eq(6)").append(
+                            _row.children("td:eq(6)").prop("rowspan",le).append(
                                 _input.clone().attr({
                                     "type":"hidden",
                                     "name":"checkType_"+rowNumber,
@@ -699,7 +706,7 @@
 	        	<h3>检验明细录入</h3>
 	        </div>
 	        <div style="float: left;margin: 20px;">
-		         <select id="checktype" onchange="ChangeCheckType()">
+		         <select id="checktype" class="form-control" onchange="ChangeCheckType()">
 		         	<option value="DZZJ" selected="selected">电装自检</option>
 		         	<option value="DZJY">电装检验</option>
 		         	<option value="TSJY">调试检验</option>
