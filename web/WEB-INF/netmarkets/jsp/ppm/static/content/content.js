@@ -209,9 +209,8 @@ function toWritePage(logo){
     var productName=currentNode.text;
     var currentNode=$('#tree').treeview('getSelected')[0];
     var productId=currentNode.id;
-
-    window.location.href="./instanceWrite.jsp?productId="+productId+"&modalName2="+modalName+
-        "&productCode="+productCode+"&productName="+productName+"&formLogo="+logo;
+    window.open("./instanceWrite.jsp?productId="+productId+"&modalName2="+modalName+
+        "&productCode="+productCode+"&productName="+productName+"&formLogo="+logo);
 }
 
 
@@ -309,9 +308,9 @@ function bindBtn() {
                             var _form=result.data[_length-1]
                             formMark=_form.logo;
                         }
-                        window.location.href="/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
+                        window.open("/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
                             modelName+"&productCode="+productCode+"&productName="+productName+
-                            "&productId="+productId+"&logo="+formMark+"&pageType=add";
+                            "&productId="+productId+"&logo="+formMark+"&pageType=add");
                     }else{
                         alert(result.message)
                     }
@@ -341,9 +340,9 @@ function bindBtn() {
                 return false;
             }
             var logo=currentFormTr.find("input[name=formSign]").val();
-            window.location.href="/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
+            window.open("/Windchill/netmarkets/jsp/ppm/content/formInfo.jsp?modelName=" +
                 modelName+"&productCode="+productCode+"&productName="+productName+
-                "&productId="+productId+"&logo="+logo;
+                "&productId="+productId+"&logo="+logo);
         }else{
             alert("请选中一条产品");
         }
@@ -374,6 +373,19 @@ function bindBtn() {
                 alert(b)
             }
         })
+    });
+    //刷新按钮，相当于再次点击了一下左侧树结构中的产品
+    $("#refreshBtn").click(function () {
+        var currentNode=$('#tree').treeview('getSelected')[0];
+        if(currentNode&&currentNode.type=="product"){
+            var productId=currentNode.id;
+            getFormList(productId);
+            //获取父节点的一些信息
+            var parentNode=$('#tree').treeview('getNode', currentNode.parentId);
+            $("#info").find("input[name=modelName]").val(parentNode.text);
+            $("#info").find("input[name=modalCode]").val(parentNode.code);
+            $("#info").find("input[name=productName]").val(currentNode.text);
+        }
     });
 }
 //注册事件

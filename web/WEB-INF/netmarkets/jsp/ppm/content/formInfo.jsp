@@ -316,7 +316,10 @@
                     dataType:'json',
                     success:function (result) {
                         if(result.success){
-                            window.location.href="/Windchill/netmarkets/jsp/ppm/content/content.jsp";
+                            //关闭当前页面
+                            window.opener = null;
+                            window.open('', '_self');
+                            window.close();
                         }else{
                             alert(result.message)
                         }

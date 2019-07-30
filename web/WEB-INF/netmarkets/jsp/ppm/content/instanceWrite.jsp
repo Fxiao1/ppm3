@@ -618,8 +618,11 @@
                 success:function (result) {
                     if(result.success){
                         // $("#formRow").addClass("hide");
-                        history.go(-1);
-                        $('#form1').get(0).reset();
+                        //关闭当前页面
+                        window.opener = null;
+                        window.open('', '_self');
+                        window.close();
+                        // $('#form1').get(0).reset();
                     }else{
                         alert(result.message)
                     }

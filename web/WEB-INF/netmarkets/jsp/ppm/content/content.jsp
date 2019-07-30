@@ -5,8 +5,22 @@
   Time: 15:42
   To change this template use File | Settings | File Templates.
 --%>
+<%@page import="wt.session.SessionHelper"%>
+<%@page import="wt.org.WTUser"%>
+<%@page import="wt.org.OrganizationServicesHelper"%>
+<%@page import="ext.modular.rule.GetGroupByName"%>
+<%@page import="wt.org.WTGroup"%>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <!DOCTYPE html>
+
+	<%
+	//获取当前用户对象
+		WTUser user = (WTUser) SessionHelper.manager.getPrincipal();
+		WTGroup designGroup = GetGroupByName.findGroupByName("工艺设计师");
+		WTGroup checkGroup = GetGroupByName.findGroupByName("检验员");
+		boolean  designMember = OrganizationServicesHelper.manager.isMember(designGroup, user);
+		boolean  checkMember = OrganizationServicesHelper.manager.isMember(checkGroup, user);
+	%>
 <html>
 <head>
     <meta charset="utf-8">
@@ -34,6 +48,8 @@
     <input type="hidden" name="modelName" >
     <input type="hidden" name="modalCode" >
     <input type="hidden" name="productName" >
+    <input type="hidden" name="designMember" value="<%=designMember%>">
+    <input type="hidden" name="checkMember" value="<%=checkMember%>">
 </div>
 <div class="container-fluid">
     <div class="row">
@@ -60,6 +76,7 @@
                 <button id="addProductBtn" class="btn btn-info">增加</button>
                 <button id="modifyProductBtn" class="btn btn-info">修改</button>
                 <button id="deleteProductBtn" class="btn btn-info">删除</button>
+                <button id="refreshBtn" class="btn btn-info">刷新</button>
             </div>
 
             <table id="myform" class="table">
