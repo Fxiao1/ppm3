@@ -78,11 +78,12 @@
                 alert("请选择统计类别");
                 return false;
             }
+            var typeVal=$("select[name=TypeVal]").val();
             $.ajax({
                 url: '/Windchill/servlet/Navigation/ppmCalculateDetail',
                 type: 'get',
                 dataType:"json",
-                data: {'actionName':'getData','dateTime':dateTime},
+                data: {'actionName':'getData','dateTime':dateTime,"TypeVal":typeVal},
                 success: function (result) {
                     if (result.success) {
                         doData(result.data,_type);
@@ -292,8 +293,17 @@
                     </div>
 
                     <label class="col-md-1">数据时间</label>
-                    <div class="col-md-3">
+                    <div class="col-md-2">
                         <input name="dateTime" readonly="readonly" class="form-control" type="text" onClick="WdatePicker({el:this,dateFmt:'yyyy-MM'})">
+                    </div>
+                    <label class="col-md-1">统计类型</label>
+                    <div class="col-md-2">
+                        <select name="TypeVal" class="form-control">
+                            <option value="0" selected="selected">工序</option>
+                            <option value="1">产品</option>
+                            <option value="2">型号</option>
+                            <option value="3">模件</option>
+                        </select>
                     </div>
 
                 </div>
