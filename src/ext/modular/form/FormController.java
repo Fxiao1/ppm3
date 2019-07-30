@@ -18,6 +18,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -107,7 +110,7 @@ public class FormController {
                     jsonStr = ResultUtils.error("缺少产品id");
                 } else {
                     formEntity.setLogo(logo);
-                    service.add(formEntity,connection);
+                    service.add(formEntity,connection,"add",null);
                     log.info("logo为{}", logo);
                 }
             }
@@ -125,14 +128,45 @@ public class FormController {
             String jsonData = request.getParameter("formList");
             //json串转换为List<FormEntity>
             int logo=Integer.parseInt(request.getParameter("logo"));
+
+          //根据logo查出表单数据实例表中的生产数量。
+            DatainstanceSer dataSer = new DatainstanceSer();
+            int quantity = dataSer.getquantityByLogo(logo, connection);
+            System.out.println("产品总数："+quantity);
+            int newQuantity = 0;
+
+            //创建人和创建时间应该得以保留
+            List<FormEntity> list=service.getFormList(logo);
+            String creator=list.get(0).getCreator();
+            Date createTime=list.get(0).getCreateTime();
+            String templateId = list.get(0).getTemplateId();
+            String templateName = list.get(0).getTemplateName();
+            DateFormat df=new SimpleDateFormat("yyyy-MM-dd HH:mm:dd");
+            log.info("删除之前获得旧数据（logo={}）的创建时间={}，创建人={}",logo,df.format(createTime),creator);
             service.delete(logo);
             if(jsonData!=null){
                 List<FormEntity> formEntityList = gson.fromJson(jsonData, new TypeToken<List<FormEntity>>() {
                 }.getType());
                 log.info("当前正在执行ext.modular.form.FormController类的update方法，表单标识={}",logo);
                 for (FormEntity form : formEntityList) {
-                    service.add(form,connection);
+                	newQuantity = form.getQuantity();
+
                 }
+                if(newQuantity>quantity) {
+                	//修改表单数据实例中的产品总数
+                	dataSer.updateData(logo, newQuantity, connection);
+
+                	 for (FormEntity form : formEntityList) {
+                		 form.setCreator(creator);
+                         form.setCreateTime(createTime);
+                         form.setTemplateId(templateId);
+                         form.setTemplateName(templateName);
+                		 service.add(form,connection,"update",df.format(createTime));
+                     }
+            	}else {
+            		jsonStr = ResultUtils.error("修改失败，修改产品总数小于原产品总数");
+            	}
+
             }
             jsonStr=ResultUtils.succ(null,"表单修改成功");
         }

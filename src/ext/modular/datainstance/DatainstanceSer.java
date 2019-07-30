@@ -77,6 +77,30 @@ public class DatainstanceSer {
         return list;
     }
 
+    public int getquantityByLogo(int logo,Connection connection){
+    	 Statement statement = null;
+    	 int quantity = 0;
+    	 String sql = String.format("SELECT logo FROM PPM_DATA_INSTANCE where logo=%s group by logo",logo);
+
+             try {
+				statement=connection.createStatement();
+				 ResultSet rs = statement.executeQuery(sql);
+				 if (rs != null) {
+		                while (rs.next()) {
+		                	quantity=rs.getInt("quantity");
+		                	System.out.println("产品总数"+quantity);
+		                }
+				 }
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+
+
+		return quantity;
+
+    }
+
     public List<DatainstanceEntity> getListByLogo(int logo,Connection connection){
         Statement statement = null;
         List<DatainstanceEntity> list = new LinkedList<>();
@@ -236,6 +260,30 @@ public class DatainstanceSer {
             ConnectionUtil.close(null, ps);
         }
     }
+
+    /**
+     * 更新表单实例数据中的生产总数
+     *
+     * @param logo
+     * @param conn
+     * @return void
+     * @Author ln
+     * @Description
+     * @Date 20:04 2019/6/27
+     **/
+    public void updateData(int logo,int quantity, Connection conn) {
+        PreparedStatement ps = null;
+        try {
+        	String sqlStr =String.format("UPDATE  ppm_data_instance SET quantity =%s,updateTime=current_timestamp  WHERE logo=%s",logo,quantity);
+            ps = conn.prepareStatement(sqlStr);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(null, ps);
+        }
+    }
+
 
     /**
      * 更新表单实例数据

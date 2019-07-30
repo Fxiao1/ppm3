@@ -110,6 +110,18 @@ function initTable(list,rebuild){
     var modalCode=$("#info").find("input[name=modalCode]").val();
     var productName=$("#info").find("input[name=productName]").val();
 
+    var checkMember=$("#info").find("input[name=checkMember]").val();
+    var designMember=$("#info").find("input[name=designMember]").val();
+ //如果当前用户为检验员，按钮隐藏，操作显示，否则按钮显示，操作隐藏。
+    var buttonGroup=$("#addProductBtn").closest("div");
+    if(checkMember=="true"){
+    	buttonGroup.removeClass("show").addClass("hide");
+    }
+    if(designMember=="true"){
+    	buttonGroup.removeClass("hide").addClass("show");
+    }
+
+
     if(rebuild){
         myformTable.destroy()
     }
@@ -143,7 +155,8 @@ function initTable(list,rebuild){
                     return '线缆';
                 }
             }},
-            { "data": "checkType","title" : "检验类型","render":function (data,type,row,meta) {
+            { "data": "ProductPhase" ,"title":"产品阶段"},
+           /* { "data": "checkType","title" : "检验类型","render":function (data,type,row,meta) {
                 if("DZZJ"==data){
                     return '电装自检';
                 }else if("DZHJ"==data){
@@ -159,7 +172,7 @@ function initTable(list,rebuild){
                 }else if("TSJJ"==data){
                     return '调试军检';
                 }
-            }},
+            }},*/
             { "data": "moduleName","title" : "名称","render":function(data){
                     return data==null?"":data;
             }},
@@ -171,7 +184,12 @@ function initTable(list,rebuild){
             { "data": "createTime","title" : "创建时间"},
             { "data": "updateTime","title" : "修改时间"},
             {"data":"logo","title":"操作","render":function (data) {
-                return   '<a onclick="toWritePage('+data+')" href="javascript:;">填写</a> ';
+            	if(checkMember=="true"){
+            		return   '<a onclick="toWritePage('+data+')" href="javascript:;">填写</a> ';
+            	}else{
+            		return  "";
+            	}
+
             }},
             {"data":"logo","title":"隐藏信息","className":"hide","render":function (data) {
                 return '<input  type="hidden" name="formSign" value="'+data+'"/>';

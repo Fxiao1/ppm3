@@ -23,7 +23,7 @@
                 getAllTemolate();
                 bindBtn();
                 bindEven();
-                getFormData();
+
             })
             //纠错，隐藏域的一些基础信息的纠错
             function errorCorrection() {
@@ -80,26 +80,31 @@
                 var category=data[0].category;
                 var checkType=data[0].checkType;
                 var ProductPhase=data[0].ProductPhase;
-                var templateId=data[0].templateId
-                alert(templateId);
+                var templateId=data[0].templateId;
+                var templateName=data[0].templateName;
                 var pageType=$("#hideInfo").find("input[name=pageType]").val();
+
+                $("#myFormEntity").find("input[name=quantity]").attr("value",quantity);
+                $("#myFormEntity").find("input[name=moduleName]").attr("value",moduleName);
+                $("#myFormEntity").find("select[name=category]").val(category);
+                $("#myFormEntity").find("input[name=ProductPhase]").attr("value",ProductPhase);
+                $("#modelList").val(templateId);
+
+
                 if(pageType!="add"){
                 	//下拉菜单功能禁用
                 	$("#modelList").attr("disabled","disabled");
                 	
-                	//生成表单按钮显示
+                	//生成表单按钮隐藏
                 	$("#createFormList").attr("style","display:none;");
                     $("#myFormEntity").find("input[name=batch]").attr("value",batch);
                 }else{
                 	//下拉菜单的禁用功能移除
                 	$("#modelList").removeAttr("disabled");
-                	//生成表单按钮隐藏
+                	//生成表单按钮显示
                 	$("#createFormList").attr("style","display:block;");
                 }
-                $("#myFormEntity").find("input[name=quantity]").attr("value",quantity);
-                $("#myFormEntity").find("input[name=moduleName]").attr("value",moduleName);
-                $("#myFormEntity").find("select[name=category]").val(category);
-                $("#myFormEntity").find("input[name=ProductPhase]").attr("value",ProductPhase);
+
                 
                 //ln
                 $.each(data,function (i,n) {
@@ -134,6 +139,8 @@
                                 var _option=$("<option></option>").text(n.name).prop("value",n.id);
                                 $("#modelList").append(_option);
                             })
+
+                            getFormData();
                         }else{
                             alert(result.message)
                         }
@@ -216,26 +223,49 @@
                 var productId=$("input[name=productId]").val();
                 //生产批次
                 var batch=$("input[name=batch]").val();
+                if(!batch){
+                	  alert("生产批次不能为空");
+                      return false;
+
+                }
                 //生产数量
                 var quantity=$("input[name=quantity]").val();
                 if(!quantity){
                     quantity=0;
+                }
+                if(quantity==0){
+                	alert("生产数量不能为0");
+                    return false;
                 }
                 //类别
                 var category=$("select[name=category]").find("option:selected").val();
                 //模件名称
                 var _data=[];
                 var moduleName=$("input[name=moduleName]").val();
+                if(!moduleName){
+                	alert("模件名不能为空");
+                    return false;
+                }
 
                 var charaList=$("#tempForm>tbody>tr");
                 var formLogo=$("#hideInfo").find("input[name=formLogo]").val();
                 var pageType=$("#hideInfo").find("input[name=pageType]").val();
                  //  产品阶段
                 var ProductPhase=$("input[name=ProductPhase]").val();
+                 if(!ProductPhase){
+                	 alert("产品阶段不能为空");
+                     return false;
+                 }
                  //模板名称
                  var templateName=$("#modelList option:selected").text();
+                 alert(templateName);
+                 if(!templateName){
+                	 alert("模板不能为空");
+                     return false;
+                 }
                  //模板id
-                 var templateId=$("#modelList option:selected").text();
+                 var templateId=$("#modelList option:selected").val();
+                 alert(templateId);
                 var _url="";
                 if(pageType!=="add"){
                     _url="/Windchill/servlet/Navigation/form?actionName=update&logo="+formLogo;

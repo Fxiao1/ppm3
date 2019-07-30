@@ -31,21 +31,41 @@ public class FormSer {
      * @Description
      * @Date 12:17 2019/6/17
      * @param formEntity
+     * @param addType 普通新增（add），还是修改型的新增（update）
+     * @param createTimeStr 见鬼了，通过 FormEntity 对象传入的createTime会发生变化，无奈，便用字符串吧
      * @return void
      * 修改  ln
      **/
-    public void add(FormEntity formEntity,Connection connection )  {
+    public void add(FormEntity formEntity,Connection connection ,String addType,String createTimeStr )  {
         Statement statement=null;
         try {
-            WTPrincipal current = SessionHelper.manager.getPrincipal();
-            String currentUser=current.getName();
             statement=connection.createStatement();
-            String sqlStr=String.format("insert into ppm_form(" +
-                            "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,check_type,templateName,templateId,PRODUCTPHASE,ppm_order) " +
-                            "values(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)"
-                    ,currentUser,formEntity.getProductId(),formEntity.getCharacId(),formEntity.getTwId(),
-                     formEntity.getLogo(),formEntity.getBatch(),formEntity.getQuantity(),formEntity.getCategory(),formEntity.getModuleName(),formEntity.getProcedureName(),
-                     formEntity.getCharacName(),formEntity.getCharacQuantity(),formEntity.getKj(),formEntity.getCheckType(),formEntity.getTemplateName(),formEntity.getTemplateId(),formEntity.getProductPhase());
+            String currentUser=null;
+            String sqlStr=null;
+            if("update".equals(addType)){
+                //如果是更新类型的新增，应该取原有的创建人
+                currentUser=formEntity.getCreator();
+                //这里的sql与下面“else”里面的sql几乎完全一致，唯一区别是多了对“createTime”字段的操控
+                sqlStr=String.format("insert into ppm_form(" +
+                                "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,check_type,templateName,templateId,PRODUCTPHASE,ppm_order,CREATETIME) " +
+                                "values(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval,to_date('%s','YYYY-MM-DD HH24:MI:SS'))"
+                        ,currentUser,formEntity.getProductId(),formEntity.getCharacId(),formEntity.getTwId(),
+                        formEntity.getLogo(),formEntity.getBatch(),formEntity.getQuantity(),formEntity.getCategory(),formEntity.getModuleName(),formEntity.getProcedureName(),
+                        formEntity.getCharacName(),formEntity.getCharacQuantity(),formEntity.getKj(),formEntity.getCheckType(),formEntity.getTemplateName(),formEntity.getTemplateId(),formEntity.getProductPhase(),
+                        createTimeStr
+                );
+            }else{
+                //标准新增
+                WTPrincipal current = SessionHelper.manager.getPrincipal();
+                currentUser=current.getName();
+                sqlStr=String.format("insert into ppm_form(" +
+                                "id,creator,product_id,chara_id,tw_id,logo,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,check_type,templateName,templateId,PRODUCTPHASE,ppm_order) " +
+                                "values(ppm_seq.nextval,'%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s','%s',ppm_order_num_seq.nextval)"
+                        ,currentUser,formEntity.getProductId(),formEntity.getCharacId(),formEntity.getTwId(),
+                        formEntity.getLogo(),formEntity.getBatch(),formEntity.getQuantity(),formEntity.getCategory(),formEntity.getModuleName(),formEntity.getProcedureName(),
+                        formEntity.getCharacName(),formEntity.getCharacQuantity(),formEntity.getKj(),formEntity.getCheckType(),formEntity.getTemplateName(),formEntity.getTemplateId(),formEntity.getProductPhase());
+            }
+
             log.info("ext.modular.form.FormSer.add 新增的sql为“{}”",sqlStr);
             statement.execute(sqlStr);
         } catch (SQLException e) {
@@ -166,7 +186,7 @@ public class FormSer {
             connection=ConnectionUtil.getJdbcConnection();
             statement=connection.createStatement();
             statement2=connection.createStatement();
-            String sql=String.format("SELECT logo,category,module_name,batch,quantity,creator,CHECK_TYPE,templateName,templateId,PRODUCTPHASE,PRODUCT_ID FROM ppm_form GROUP BY logo,category,module_name,batch,quantity,creator,CHECK_TYPE,templateName,templateId,PRODUCTPHASE,PRODUCT_ID HAVING PRODUCT_ID=%s",
+            String sql=String.format("SELECT logo,category,module_name,batch,quantity,creator,templateName,templateId,PRODUCTPHASE,PRODUCT_ID FROM ppm_form GROUP BY logo,category,module_name,batch,quantity,creator,templateName,templateId,PRODUCTPHASE,PRODUCT_ID HAVING PRODUCT_ID=%s",
                     productId);
             log.info("查询全部数据的sql为："+sql);
             ResultSet resultSet=statement.executeQuery(sql);
@@ -180,7 +200,6 @@ public class FormSer {
                     map.put("batch",resultSet.getString("batch"));
                     map.put("quantity",resultSet.getInt("quantity"));
                     map.put("creator",resultSet.getString("creator"));
-                    map.put("checkType",resultSet.getString("check_type"));
                     map.put("templateName",resultSet.getString("templateName"));
                     map.put("templateId",resultSet.getString("templateId"));
                     map.put("productId",resultSet.getInt("product_id"));
