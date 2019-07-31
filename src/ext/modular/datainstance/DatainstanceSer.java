@@ -140,6 +140,10 @@ public class DatainstanceSer {
                     de.setCharacteristicsTotal(rs.getInt("characteristics_total"));
                     de.setDataInsMark(rs.getInt("datains_mark"));
                     de.setId(rs.getInt("id"));
+                    de.setCreator(rs.getString("CREATOR"));
+                    de.setCreateTime(rs.getDate("CREATETIME"));
+                    de.setUpdateTime(rs.getDate("UPDATETIME"));
+
                     list.add(de);
                 }
             }

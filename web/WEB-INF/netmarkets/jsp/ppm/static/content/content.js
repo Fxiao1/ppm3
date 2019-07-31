@@ -90,7 +90,26 @@ function getFormList(productId){
         dataType:'json',
         success:function (result) {
             if(result.success){
-                initTable(result.data);
+                //如果数据实例有数据了，应该优先取数据实例的数据
+                var dataList=[];
+                $.each(result.data,function (i, n) {
+                    $.getJSON("/Windchill/servlet/Navigation/datainstance",
+                        {"actionName":"getByFormMark","logo":n.logo},
+                        function (result2) {
+                        if(result2.data.length>0){
+                            n.updateTime=result2.data[0].updateTime;
+                            dataList[dataList.length]=n;
+                        }else{
+                            dataList[dataList.length]=n;
+                        }
+                    })
+                })
+                var check=setInterval(function () {
+                    if(result.data.length==dataList.length){
+                        clearInterval(check);
+                        initTable(dataList);
+                    }
+                },100);
             }else{
                 alert(result.message);
             }
@@ -128,6 +147,7 @@ function initTable(list){
     }
     var option={
         data:list,
+        "order":[[9,'desc']],
         "columns": [
             { "data": null ,"title":"产品型号","render":function () {
                     return modelName;
