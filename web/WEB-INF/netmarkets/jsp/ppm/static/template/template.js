@@ -220,10 +220,9 @@ function bindBtns(){
 
     //特性form的提交按钮
     $("#characFormSubmit").click(function () {
-
-    	 if(examine()==1){
-             return false;
-         }
+        if(examine()){
+            return false;
+        }
         var _data=$("#characForm").serialize();
         $.ajax({
             url:"/Windchill/servlet/Navigation/procedurelink?actionName=post",
@@ -251,33 +250,19 @@ function bindBtns(){
      */
     function examine() {
         var numberInput=$("#characForm").find("input[name=coefficient]");
-        var hasError=false;
-        $.each(numberInput,function(i,n){
-            var num=$(n).val();
-            num=num==""?"0":num;
-            reg=/^\d+$/;
-            if(reg.test(num)){
-                $(n).closest("td").removeClass("has-error");
-                $(n).prop("title","");
-            }else{
-                $(n).closest("td").addClass("has-error");
-                $(n).prop("title","该数字框内必须是正整数");
-                hasError=true;
-            }
-        });
-        if(hasError){
-            alert("检查发现数字输入框有部分错误，具体错误原因，请将鼠标移至红色框上查看")
-            return 1;
-        }else{
-            return 0;
-        }
-
-        //检查名称不为空
         var characName=$("#characForm").find("input[name=name]").val();
-       if(characName==null||characName.trim(characName)==""){
-           alert("特性名称不能为空");
-           return false;
+        var hasError=false;
+        var num=numberInput.val();
+        reg=/^\d+$/;
+        if(!reg.test(num)||num==""){
+            alert("严酷度加权系数必须是正整数");
+            hasError=true;
+        }else if (characName == null || characName.trim(characName) == "") {
+            //检查名称不为空
+            alert("特性名称不能为空");
+            hasError=true;
         }
+        return hasError;
     }
 
 
@@ -515,10 +500,14 @@ function templateSubmit(){
         url:"/Windchill/servlet/Navigation/templatelink?actionName=post",
         data:$("#modelForm").serialize(),
         type:"post",
+        dataType:"json",
         success:function (result) {
             if(!result.success){
                 addLog(result.message);
+                alert(result.message);
+                return false;
             }
+
             $("#addModel").modal("hide");
             getModelList();
         },
@@ -527,6 +516,7 @@ function templateSubmit(){
             $("#addModel").modal("hide");
         }
     })
+
 }
 //根据模板获取检验特性
 function getProcedureByTemplate(){
