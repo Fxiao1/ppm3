@@ -50,8 +50,14 @@ public class FormController {
         FormSer service = new FormSer();
         //查看表单
         if ("get".equals(actionName)) {
-            String logo = request.getParameter("logo");
-            List<FormEntity> formList = service.getFormList(Integer.parseInt(logo));
+            int logo = Integer.valueOf(request.getParameter("logo"));
+            String checkType=request.getParameter("checkType");
+            List<FormEntity> formList=null;
+            if(StringUtils.isEmpty(checkType)){
+                formList= service.getFormList(logo);
+            }else{
+                formList=service.getByCheckType(logo,checkType);
+            }
             if (formList != null) {
                 log.info("获取的表单列表长度为{}", String.valueOf(formList.size()));
                 jsonStr = ResultUtils.succ(formList, "获取表单列表成功");

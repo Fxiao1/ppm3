@@ -228,7 +228,35 @@ public class FormSer {
        return data;
     }
 
-
+    /**
+     * 根据标识和检验类型获取数据列表
+     * @Author Fxiao
+     * @Description
+     * @Date 18:09 2019/7/31
+     * @param logo
+     * @param checkType
+     * @return java.util.List<ext.modular.form.FormEntity>
+     **/
+    public List<FormEntity> getByCheckType(int logo, String checkType){
+        Connection connection = null;
+        Statement statement = null;
+        List<FormEntity>fromList=new LinkedList<>();
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr =String.format("SELECT * FROM ppm_form WHERE logo=%s AND CHECK_TYPE='%s'",
+                    logo,checkType
+            ) ;
+            ResultSet rs=statement.executeQuery(sqlStr);
+            DataPack<List<FormEntity>> dataPack=getFormListByResultSet(rs);
+            if(dataPack.isSuccess()) fromList=dataPack.getData();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+        return fromList;
+    }
     
     /**
      * 根据表单标识删除表单

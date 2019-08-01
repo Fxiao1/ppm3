@@ -30,39 +30,29 @@
             var formLogo='<%=request.getParameter("formLogo")%>';
             //首先检查一下是否已有数据了
             getDataInstance(formLogo);
-
             bindBtn();
             bindEven();
         })
 
         function getDataInstance(formLogo){
-            $.ajax({
-                url:'/Windchill/servlet/Navigation/datainstance',
-                type:'get',
-                data:{"actionName":"getByFormMark","logo":formLogo},
-                dataType:'json',
-                success:function (result) {
-                    if(result.success){
-                        if(result.data.length==0){
-                            //说明当前页面是新增
-                            getFormItem();
-                        }else{
-                            //说明当前页面是修改
-                            $("#hideInfo").find("input[name=pageType]").val("update");
-                            $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
-                            showFormInfo(result.data[0]);
-                            initMyTable2(result.data);
-                            initMyTable3(result.data);
-                        }
+            var checkType = $("#checkType").val();
+            $.getJSON(
+                "/Windchill/servlet/Navigation/datainstance",
+                {"actionName":"getByCheckType","logo":formLogo,"checkType":checkType},
+                function (result) {
+                    if(result.data.length==0){
+                        //说明当前页面是新增
+                        getFormItem(formLogo,checkType);
                     }else{
-                        alert(result.message)
+                        //说明当前页面是修改
+                        $("#hideInfo").find("input[name=pageType]").val("update");
+                        $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
+                        showFormInfo(result.data[0]);
+                        initMyTable2(result.data);
+                        initMyTable3(result.data);
                     }
-                },
-                error:function (a, b) {
-                    alert(b);
                 }
-            });
-
+            )
         }
         function bindBtn() {
             $("#confirmBtn").unbind("click").click(function(){
@@ -156,12 +146,11 @@
         /**
          * 获取form表单定义，根据这个数据去动态生成表格
          */
-        function getFormItem() {
-            var formLogo="<%=request.getParameter("formLogo")%>";
+        function getFormItem(formLogo,checkType){
             $.ajax({
                 url:'/Windchill/servlet/Navigation/form',
                 type:'get',
-                data:{"actionName":"get","logo":formLogo},
+                data:{"actionName":"get","logo":formLogo,"checkType":checkType},
                 dataType:'json',
                 success:function (result) {
                     if(result.success){
@@ -278,6 +267,7 @@
          * “ext.modular.datainstance.DatainstanceEntity”对象列表
          */
         function initMyTable3(resultData) {
+            $("#instanceDataTable3>tbody").html("");
             if(resultData.length==0){
                return false;
             }
@@ -292,6 +282,10 @@
             $("#form1").prepend($("<input>").prop({"type":"hidden","name":"moduleName","value":formItem.moduleName}));
             //产品阶段
             $("#form1").prepend($("<input>").prop({"type":"hidden","name":"ProductPhase","value":formItem.ProductPhase}));
+          //模版名
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"templateName","value":formItem.templateName}));
+          //模版id
+            $("#form1").prepend($("<input>").prop({"type":"hidden","name":"templateId","value":formItem.templateId}));
 
             //封装数据成为一个对象，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}
@@ -585,24 +579,31 @@
 
 		//数据回写
         function showFormInfo(formItem) {
-        	 var checkTypeObj={
-            		 "DZZJ":"电装自检",
-                     "DZHJ":"电装互检",
-                     "DZJY":"电装检验",
-                     "TSJY":"调试检验",
-                     "TSZJ":"调试自检",
-                     "DZJJ":"电装军检",
-                     "TSJJ":"调试军检"
-            }
             var formInfo=$("#formInfo");
-            formInfo.find("span[name=category]").text(formItem.category);
-            formInfo.find("span[name=moduleName]").text(formItem.moduleName);
-            formInfo.find("span[name=batch]").text(formItem.batch);
-            formInfo.find("span[name=quantity]").text(formItem.quantity);
-            formInfo.find("span[name=checkType]").text(checkTypeObj[formItem.checkType]);
-            formInfo.find("span[name=ProductPhase]").text(formItem.ProductPhase);
-            
-            
+            var checkTypeObj={
+                "DZZJ":"电装自检",
+                "DZHJ":"电装互检",
+                "DZJY":"电装检验",
+                "TSJY":"调试检验",
+                "TSZJ":"调试自检",
+                "DZJJ":"电装军检",
+                "TSJJ":"调试军检"
+            }
+            var category="",moduleName="",batch="",quantity=0,checkType="",productPhase="";
+            if(formItem){
+                category=formItem.category;
+                moduleName=formItem.moduleName;
+                batch=formItem.batch;
+                quantity=formItem.quantity;
+                checkType=checkTypeObj[formItem.checkType];
+                productPhase=formItem.ProductPhase
+            }
+            formInfo.find("span[name=category]").text(category);
+            formInfo.find("span[name=moduleName]").text(moduleName);
+            formInfo.find("span[name=batch]").text(batch);
+            formInfo.find("span[name=quantity]").text(quantity);
+            formInfo.find("span[name=checkType]").text(checkType);
+            formInfo.find("span[name=ProductPhase]").text(productPhase);
         }
         function submitForm(){
             //“填写”操作之后，会将里面的数据拿到后台进行计算，得到计算结果之后的表单实体列表会返回json，并暂存到下面这个隐藏域里面，所以此时，
@@ -650,6 +651,13 @@
         //检验明细页面检验类型改变时
         function ChangeCheckType() {
         	var checkType = $("#checkType").val();
+            var formLogo='<%=request.getParameter("formLogo")%>';
+            $.getJSON("/Windchill/servlet/Navigation/datainstance",{"actionName":"getByCheckType","logo":formLogo,"checkType":checkType},
+                function (result) {
+                showFormInfo(result.data[0]);
+                initMyTable2(result.data);
+                initMyTable3(result.data)
+            })
 		}
     </script>
 </head>
@@ -660,44 +668,55 @@
         <input type="hidden" name="allDataInstance" >
         <input type="hidden" name="pageType" value="add">
     </div>
-    <div id="infoView" class="row">
-        <div class="col-lg-12">
+    <div class="row">
+        <h3 class="text-center">检验数据填写</h3>
+    </div>
+    <div class="row" id="formInfo">
+        <div class="col-md-9 col-sm-10">
             <div class="row">
-                <h3 class="text-center">检验数据填写</h3>
-            </div>
-            <div class="row" id="formInfo">
-                <div class="col-md-2">产品型号:<span name="modalName"><%=request.getParameter("modalName2")%></span></div>
-                <div class="col-md-2">产品代号:<span name="productCode"><%=request.getParameter("productCode")%></span></div>
-                <div class="col-md-2">产品名称:<span name="productName"><%=request.getParameter("productName")%></span></div>
-                <div class="col-md-2">类别:<span name="category"></span></div>
-                <div class="col-md-2">整机/模件/线缆:<span name="moduleName"></span></div>
-                <div class="col-md-2">生产批次:<span name="batch"></span></div>
-                <div class="col-lg-2">生产数量:<span name="quantity"></span></div>
-                <div class="col-lg-2">检验类型:<span name="checkType"></span></div>
-                <div class="col-lg-2">产品阶段:<span name="ProductPhase"></span></div>
+                <div class="col-md-2"><label>产品型号:</label><span name="modalName"><%=request.getParameter("modalName2")%></span></div>
+                <div class="col-md-2"><label>产品代号:</label><span name="productCode"><%=request.getParameter("productCode")%></span></div>
+                <div class="col-md-2"><label>产品名称:</label><span name="productName"><%=request.getParameter("productName")%></span></div>
+                <div class="col-md-2"><label>类别:</label><span name="category"></span></div>
+                <div class="col-md-2"><label>整机/模件/线缆:</label><span name="moduleName"></span></div>
             </div>
             <div class="row">
-                <table id="instanceDataTable2" class="table table-bordered table-striped">
-                    <thead><tr>
-                        <th>序号</th>
-                        <th>工序名称</th>
-                        <th>工序检验特性检验处的缺陷数</th>
-                        <th>工序检验特性名称</th>
-                        <th>工序检验特性数量</th>
-                        <th>工序检验特性总数</th>
-                        <th>本工序检验特性缺陷数</th>
-                        <th>严酷度加权系数</th>
-                        <th>该工序检验特性检出的缺陷总数</th>
-                        <th>本工序ppm</th>
-                    </tr></thead>
-                    <tbody>
-                    </tbody>
-                </table>
-            </div>
-            <div class="row">
-                <button type="button" onclick="submitForm()" class="btn btn-info col-lg-offset-8">保存</button>
+                <div class="col-md-2"><label>生产批次:</label><span name="batch"></span></div>
+                <div class="col-lg-2"><label>生产数量:</label><span name="quantity"></span></div>
+                <div class="col-lg-2"><label>检验类型:</label><span name="checkType"></span></div>
+                <div class="col-lg-2"><label>产品阶段:</label><span name="ProductPhase"></span></div>
             </div>
         </div>
+        <div class="col-md-3 col-md-2">
+            <select id="checkType" class="form-control" onchange="ChangeCheckType()">
+                <option value="DZZJ" selected="selected">电装自检</option>
+                <option value="DZJY">电装检验</option>
+                <option value="TSJY">调试检验</option>
+                <option value="DZHJ">电装互检</option>
+                <option value="TSZJ">调试自检</option>
+                <option value="DZJJ">电装军检</option>
+                <option value="TSJJ">调试军检</option>
+            </select>
+        </div>
+    </div>
+    <div id="infoView" class="row">
+        <table id="instanceDataTable2" class="table table-bordered table-striped">
+            <thead><tr>
+                <th>序号</th>
+                <th>工序名称</th>
+                <th>工序检验特性检验处的缺陷数</th>
+                <th>工序检验特性名称</th>
+                <th>工序检验特性数量</th>
+                <th>工序检验特性总数</th>
+                <th>本工序检验特性缺陷数</th>
+                <th>严酷度加权系数</th>
+                <th>该工序检验特性检出的缺陷总数</th>
+                <th>本工序ppm</th>
+            </tr></thead>
+            <tbody>
+            </tbody>
+        </table>
+        <button type="button" onclick="submitForm()" class="btn btn-info col-lg-offset-8">保存</button>
     </div>
 
     <div id="formRow" class="row hide" style="margin-top:15px;">
@@ -705,17 +724,6 @@
     		<div style="float: left;">
 	        	<h3>检验明细录入</h3>
 	        </div>
-	        <div style="float: left;margin: 20px;">
-		         <select id="checktype" class="form-control" onchange="ChangeCheckType()">
-		         	<option value="DZZJ" selected="selected">电装自检</option>
-		         	<option value="DZJY">电装检验</option>
-		         	<option value="TSJY">调试检验</option>
-		         	<option value="DZHJ">电装互检</option>
-		         	<option value="TSZJ">调试自检</option>
-		         	<option value="DZJJ">电装军检</option>
-		         	<option value="TSJJ">调试军检</option>
-		         </select>
-		      </div>
          </div>
         <form id="form1">
             <input type="hidden" name="logo" value="<%=request.getParameter("formLogo")%>">
@@ -749,4 +757,3 @@
 <div class="hide" id="log"></div>
 </body>
 </html>
-

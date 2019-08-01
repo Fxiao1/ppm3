@@ -34,40 +34,7 @@ public class DatainstanceSer {
             statement = connection.createStatement();
             String sql = "SELECT * FROM PPM_DATA_INSTANCE where product_id=" + productId;
             ResultSet rs = statement.executeQuery(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    DatainstanceEntity de = new DatainstanceEntity();
-                    /*chara_id,tw_id,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM,procedure_ppm,defect_number_item,characteristics_total,datains_mark*/
-                    de.setCharaId(rs.getInt("chara_id"));
-                    de.setTwId(rs.getInt("tw_id"));
-                    de.setBatch(rs.getString("batch"));
-                    de.setQuantity(rs.getInt("quantity"));
-                    de.setCategory(rs.getString("category"));
-                    de.setModuleName(rs.getString("module_name"));
-                    de.setProcedureName(rs.getString("procedure_name"));
-                    de.setCharacName(rs.getString("charac_name"));
-                    de.setCharacQuantity(rs.getInt("charac_quantity"));
-                    de.setTemplateName(rs.getString("templateName"));
-                    de.setTemplateId(rs.getString("templateId"));
-                    de.setProductPhase(rs.getString("ProductPhase"));
-                    de.setKj(rs.getInt("kj"));
-                    de.setDefectNumber(rs.getInt("defect_number"));
-                    de.setCheckType(rs.getString("check_type"));
-                    de.setCheckPerson(rs.getString("check_person"));
-                    de.setCheckPersonId(rs.getString("check_person_id"));
-                    long temp = rs.getDate("check_time").getTime();
-                    java.util.Date checkTime = new java.util.Date();
-                    checkTime.setTime(temp);
-                    de.setCheckTime(checkTime);
-                    de.setProductCount(rs.getInt("product_count"));
-                    de.setCharacPPM(rs.getInt("charac_PPM"));
-                    de.setProcedurePpm(rs.getInt("procedure_ppm"));
-                    de.setDefectNumberItem(rs.getInt("defect_number_item"));
-                    de.setCharacteristicsTotal(rs.getInt("characteristics_total"));
-                    de.setDataInsMark(rs.getInt("datains_mark"));
-                    list.add(de);
-                }
-            }
+            list=encapsulationList(rs);
             return list;
         } catch (SQLException e) {
             e.printStackTrace();
@@ -108,45 +75,7 @@ public class DatainstanceSer {
         try {
             statement=connection.createStatement();
             ResultSet rs = statement.executeQuery(sql);
-            if (rs != null) {
-                while (rs.next()) {
-                    DatainstanceEntity de = new DatainstanceEntity();
-                    /*chara_id,tw_id,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM,procedure_ppm,defect_number_item,characteristics_total,datains_mark*/
-                    de.setCharaId(rs.getInt("chara_id"));
-                    de.setTwId(rs.getInt("tw_id"));
-                    de.setBatch(rs.getString("batch"));
-                    de.setQuantity(rs.getInt("quantity"));
-                    de.setCategory(rs.getString("category"));
-                    de.setModuleName(rs.getString("module_name"));
-                    de.setProcedureName(rs.getString("procedure_name"));
-                    de.setCharacName(rs.getString("charac_name"));
-                    de.setCharacQuantity(rs.getInt("charac_quantity"));
-                    de.setTemplateName(rs.getString("templateName"));
-                    de.setTemplateId(rs.getString("templateId"));
-                    de.setProductPhase(rs.getString("ProductPhase"));
-                    de.setKj(rs.getInt("kj"));
-                    de.setDefectNumber(rs.getInt("defect_number"));
-                    de.setCheckType(rs.getString("check_type"));
-                    de.setCheckPerson(rs.getString("check_person"));
-                    de.setCheckPersonId(rs.getString("check_person_id"));
-                    long temp = rs.getDate("check_time").getTime();
-                    java.util.Date checkTime = new java.util.Date();
-                    checkTime.setTime(temp);
-                    de.setCheckTime(checkTime);
-                    de.setProductCount(rs.getInt("product_count"));
-                    de.setCharacPPM(rs.getInt("charac_PPM"));
-                    de.setProcedurePpm(rs.getInt("procedure_ppm"));
-                    de.setDefectNumberItem(rs.getInt("defect_number_item"));
-                    de.setCharacteristicsTotal(rs.getInt("characteristics_total"));
-                    de.setDataInsMark(rs.getInt("datains_mark"));
-                    de.setId(rs.getInt("id"));
-                    de.setCreator(rs.getString("CREATOR"));
-                    de.setCreateTime(rs.getDate("CREATETIME"));
-                    de.setUpdateTime(rs.getDate("UPDATETIME"));
-
-                    list.add(de);
-                }
-            }
+            list=encapsulationList(rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }finally {
@@ -251,8 +180,8 @@ public class DatainstanceSer {
             ps.setInt(23, de.getCharacteristicsTotal());
             ps.setInt(24, dataMark);
             ps.setString(25, de.getTemplateName());
-            ps.setString(26, de.getTemplateName());
-            ps.setString(27, de.getTemplateId());
+            ps.setString(26, de.getTemplateId());
+            ps.setString(27, de.getProductPhase());
             int row = ps.executeUpdate();
             log.info("当前语句执行后修改行数为：" + row);
 
@@ -302,7 +231,7 @@ public class DatainstanceSer {
     public void updateDataInstance(DatainstanceEntity de, Connection conn) {
         PreparedStatement ps = null;
         try {
-            //20个字段,21个占位符
+            //23个字段,24个占位符
             String sqlStr = "UPDATE ppm_data_instance SET (" +
                     //1-8
                     "chara_id,tw_id,batch,quantity,category,module_name,procedure_name,charac_name," +
@@ -396,6 +325,85 @@ public class DatainstanceSer {
         }finally {
             ConnectionUtil.close(connection, statement);
         }
+    }
+    /**
+     * 根据标识和检验类型获取数据列表
+     * @Author Fxiao
+     * @Description
+     * @Date 17:13 2019/7/31
+     * @param logo
+     * @param checkType
+     * @return java.util.List<ext.modular.datainstance.DatainstanceEntity>
+     **/
+    public List<DatainstanceEntity> getByCheckType(int logo,String checkType){
+        Connection connection = null;
+        Statement statement = null;
+        List<DatainstanceEntity>list=new LinkedList<>();
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr =String.format("SELECT * FROM PPM_DATA_INSTANCE WHERE logo=%s AND CHECK_TYPE='%s'",
+                        logo,checkType
+                    ) ;
+            ResultSet rs=statement.executeQuery(sqlStr);
+            list=encapsulationList(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+        return list;
+    }
+    /**
+     * 从ResultSet中封装List对象
+     * @Author Fxiao
+     * @Description
+     * @Date 17:23 2019/7/31
+     * @param rs ResultSet结果集
+     * @return java.util.List<ext.modular.datainstance.DatainstanceEntity>
+     **/
+    private List<DatainstanceEntity> encapsulationList(ResultSet rs) throws SQLException {
+        List<DatainstanceEntity>list=new LinkedList<>();
+        if (rs != null) {
+            while (rs.next()) {
+                DatainstanceEntity de = new DatainstanceEntity();
+                /*chara_id,tw_id,batch,quantity,category,module_name,procedure_name,charac_name,charac_quantity,kj,defect_number,check_type,check_person,check_person_id,check_time,product_count,charac_PPM,procedure_ppm,defect_number_item,characteristics_total,datains_mark*/
+                de.setCharaId(rs.getInt("chara_id"));
+                de.setTwId(rs.getInt("tw_id"));
+                de.setBatch(rs.getString("batch"));
+                de.setQuantity(rs.getInt("quantity"));
+                de.setCategory(rs.getString("category"));
+                de.setModuleName(rs.getString("module_name"));
+                de.setProcedureName(rs.getString("procedure_name"));
+                de.setCharacName(rs.getString("charac_name"));
+                de.setCharacQuantity(rs.getInt("charac_quantity"));
+                de.setTemplateName(rs.getString("templateName"));
+                de.setTemplateId(rs.getString("templateId"));
+                de.setProductPhase(rs.getString("ProductPhase"));
+                de.setKj(rs.getInt("kj"));
+                de.setDefectNumber(rs.getInt("defect_number"));
+                de.setCheckType(rs.getString("check_type"));
+                de.setCheckPerson(rs.getString("check_person"));
+                de.setCheckPersonId(rs.getString("check_person_id"));
+                long temp = rs.getDate("check_time").getTime();
+                java.util.Date checkTime = new java.util.Date();
+                checkTime.setTime(temp);
+                de.setCheckTime(checkTime);
+                de.setProductCount(rs.getInt("product_count"));
+                de.setCharacPPM(rs.getInt("charac_PPM"));
+                de.setProcedurePpm(rs.getInt("procedure_ppm"));
+                de.setDefectNumberItem(rs.getInt("defect_number_item"));
+                de.setCharacteristicsTotal(rs.getInt("characteristics_total"));
+                de.setDataInsMark(rs.getInt("datains_mark"));
+                de.setId(rs.getInt("id"));
+                de.setCreator(rs.getString("CREATOR"));
+                de.setCreateTime(rs.getDate("CREATETIME"));
+                de.setUpdateTime(rs.getDate("UPDATETIME"));
+
+                list.add(de);
+            }
+        }
+        return list;
     }
 
 }

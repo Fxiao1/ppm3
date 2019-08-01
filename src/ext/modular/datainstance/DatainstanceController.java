@@ -18,13 +18,14 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * des:
@@ -70,6 +71,14 @@ public class DatainstanceController {
                 log.info("查询到的数据实例条数为：{}条",list.size());
                 jsonStr=ResultUtils.succ(list);
             }
+        }
+        //获取相应检验类型的数据
+        else if("getByCheckType".equals(actionName)){
+            int logo=Integer.valueOf(request.getParameter("logo"));
+            String checkType=request.getParameter("checkType");
+            List<DatainstanceEntity>list=ser.getByCheckType(logo,checkType);
+            log.info("正在获取检验类型={},logo={}的数据，获得得的数据条数为{}条",checkType,logo,list.size());
+            jsonStr=ResultUtils.succ(list);
         }
         //检验明细录入保存
         else if("add".equals(actionName)){
@@ -161,6 +170,13 @@ public class DatainstanceController {
         String category=request.getParameter("category");
         ////整机、模件、线缆名称
         String moduleName=request.getParameter("moduleName");
+        //生产阶段
+        String ProductPhase=request.getParameter("ProductPhase");
+        //模板name
+        String templateName=request.getParameter("templateName");
+        //模板id
+        String templateId=request.getParameter("templateId");
+
         //产品数
         int productCount=0;
         String checkType=null,checkPerson=null,oldProcedureIdStr=null,newProcedureIdStr;
@@ -204,6 +220,9 @@ public class DatainstanceController {
             ins.setKj(strToInt(request.getParameter("kj_"+i)));
             ins.setLogo(strToInt(request.getParameter("logo")));
             ins.setProductId(strToInt(request.getParameter("productId")));
+            ins.setProductPhase(ProductPhase);
+            ins.setTemplateName(templateName);
+            ins.setTemplateId(templateId);
             log.info("接收到的logo={},接收到的产品id={}。",request.getParameter("logo")
                 ,request.getParameter("productId"));
             Integer id=strToInt(request.getParameter("dataItemIds_"+i));
