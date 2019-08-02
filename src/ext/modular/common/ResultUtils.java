@@ -32,6 +32,13 @@ public class ResultUtils {
         dataPack.setMessage(message);
         return gson.toJson(dataPack);
     }
+    public static <T> String error(T t,String message){
+        DataPack dataPack=new DataPack<>();
+        dataPack.setSuccess(false);
+        dataPack.setMessage(message);
+        dataPack.setData(t);
+        return gson.toJson(dataPack);
+    }
     /**
      * 打包数据
      * @Author Fxiao

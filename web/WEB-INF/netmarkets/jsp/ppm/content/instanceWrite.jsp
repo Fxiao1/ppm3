@@ -27,14 +27,31 @@
 
         $(function() {
             var productId=$("#hideInfo").find("input[name=productId]").val();
-            var formLogo='<%=request.getParameter("formLogo")%>';
             //首先检查一下是否已有数据了
-            getDataInstance(formLogo);
+            getDataInstance();
             bindBtn();
             bindEven();
         })
 
-        function getDataInstance(formLogo){
+		//默认时间为当前时间ln
+        function today(){
+            var today=new Date();
+            var h=today.getFullYear();
+            var m=today.getMonth()+1;
+            var d=today.getDate();
+            var hh=today.getHours();
+            var mm=today.getMinutes();
+            var ss=today.getSeconds();
+            m= m<10?"0"+m:m;
+            d= d<10?"0"+d:d;
+            hh = hh < 10 ? "0" + hh:hh;
+            mm = mm < 10 ? "0" +  mm:mm;
+            ss = ss < 10 ? "0" + ss:ss;
+            return h+"-"+m+"-"+d+" "+hh+":"+mm+":"+ss;
+        }
+
+        function getDataInstance(){
+            var formLogo='<%=request.getParameter("formLogo")%>';
             var checkType = $("#checkType").val();
             $.getJSON(
                 "/Windchill/servlet/Navigation/datainstance",
@@ -56,20 +73,18 @@
         }
         function bindBtn() {
             $("#confirmBtn").unbind("click").click(function(){
+                // 检查表单数字类型合法性
                 if(examine()==1){
                     return false;
                 }
                 calculation();
-                $("#formRow").addClass("hide");
-                $("#infoView").removeClass("hide");
-
-
             });
         }
         /**
          * 检查表单
          */
         function examine() {
+            //检查数字类型的合法性
             var numberInput=$("#form1").find("input[type=number]");
             var hasError=false;
             $.each(numberInput,function(i,n){
@@ -111,10 +126,19 @@
                 data:formData,
                 success:function (result) {
                     if(result.success){
-                       $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
-                       initMyTable2(result.data);
+                        $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
+                        initMyTable2(result.data);
+                        $("#formRow").addClass("hide");
+                        $("#infoView").removeClass("hide");
                     }else{
-                        alert(result.message)
+                        alert(result.message);
+                        updateProductCount();
+                        setTimeout(function(){
+                            var currentProductCounts=$("#instanceDataTable3").find("input.currentProductCount");
+                            $.each(currentProductCounts,function(i,n){
+                                maximum($(n));
+                            })
+                        },1000);
                     }
                 },
                 error:function (a, b) {
@@ -124,24 +148,6 @@
         }
 
         function bindEven() {
-            $("#instanceDataTable3").on("change","input.productCount",function(){
-                //检查用户输入的产品总数是否超过“生产数量”上的值
-                //生产数量
-                var quantity=parseInt($("#formInfo").find("span[name=quantity]").text());
-                //产品总数
-                var temp=$(this).val();
-                var currentNum=temp==""?0:parseInt(temp);
-                // var countNum=0;
-                /*$.each($("#instanceDataTable3").find("input.productCount"),function (i, n) {
-                    var temp=$(n).val();
-                    countNum+=temp==""?0:parseInt(temp);
-                })*/
-                if(currentNum>quantity){
-                    alert("填写的产品数不能大于生产数量！生产数量="+quantity+"，当前产品数="+currentNum);
-                    $(this).val(0);
-                };
-
-            });
         }
         /**
          * 获取form表单定义，根据这个数据去动态生成表格
@@ -308,14 +314,6 @@
             //当前页面正在进行什么操作？
             var pageType=$("#hideInfo").find("input[name=pageType]").val();
             var _input=$("<input>").addClass("form-control").css("width","100%");
-           /*  var _select=$("<select></select>").addClass("form-control").css("width","100%");
-            var _option=$("<option></option>");
-            _select
-                .append(_option.clone().css("display", "none"))
-                .append(_option.clone().text("自检").val("ZiJ"))
-                .append(_option.clone().text("互检").val("HuJ"))
-                .append(_option.clone().text("专检").val("ZhJ"))
-                .append(_option.clone().text("军检").val("JunJ")); */
             var checkTypeObj={
             		 "DZZJ":"电装自检",
                      "DZHJ":"电装互检",
@@ -348,16 +346,38 @@
 
                             ).append(
                                 _input.clone()
-                                    .prop({"type":"hidden","name":"procedureId_"+rowNumber}).val(n.twId)
-
+                                    .prop({
+                                        "type":"hidden","name":"procedureId_"+rowNumber
+                                    }).val(n.twId).addClass("procedureId")
                             );
+                            var productCount=0;
+                            var maxPruduct=0;
+                            if(n.productCount){
+                                productCount=n.productCount;
+                            }
+                            maxPruduct=n.quantity-productCount;
                             _row.children("td:eq(2)").prop("rowspan",le).append(
+                                _input.clone().prop({
+                                    "type":"hidden",
+                                    "value":productCount
+                                }).addClass("initialProductCount")
+                            ).append(
                                 _input.clone()
-                                    .prop({"type":"number",
-                                    	"name":"productCount_"+rowNumber,
-                                    	"value":n.productCount,
+                                    .prop({"type":"hidden",
+                                    	"value":productCount,
                                     	"min":0})
                                     .addClass("productCount")
+                            ).append(
+                                _input.clone().attr({
+                                    "type":"number",
+                                    "min":0,
+                                    "value":0,
+                                    "max":maxPruduct,
+                                    "name":"productCount_"+rowNumber,
+                                    "onChange":"maximum(this)"
+                                }).addClass("currentProductCount")
+                            ).append(
+                                $("<p></p>").text("最多可以输入"+maxPruduct+"个产品数")
                             );
                             _row.children("td:eq(3)").append(
                                 _input.clone().attr(
@@ -411,7 +431,9 @@
                                 });
                             if(n.checkTime){
                                 checkTimeInput.val(n.checkTime);
-                            }
+                            }else{
+								checkTimeInput.val(today());
+							}
                             _row.children("td:eq(8)").prop("rowspan",le).append(
                                 checkTimeInput
                             );
@@ -488,20 +510,46 @@
                     var _row=$('<tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td> <td class="hide Info"></td></tr>');
                     _row.children("td:eq(0)").text(++indexNum);
                     _row.children("td:eq(1)").append(
-                        _input.clone().attr({"readonly":"readonly","type":"text","name":"procedureName_"+rowNumber,"value":n.procedureName})
+                        _input.clone().attr({
+                            "readonly":"readonly",
+                            "type":"text",
+                            "name":"procedureName_"+rowNumber,
+                            "value":n.procedureName
+                        })
                     ).append(
                         _input.clone()
-                            .prop({"type":"hidden","name":"procedureId_"+rowNumber}).val(n.twId)
-
+                            .prop({
+                                "type":"hidden","name":"procedureId_"+rowNumber
+                            }).val(n.twId).addClass("procedureId")
                     );
+                    var productCount=0;
+                    var maxPruduct=0;
+                    if(n.productCount){
+                        productCount=n.productCount;
+                    }
+                    maxPruduct=n.quantity-productCount;
                     _row.children("td:eq(2)").append(
+                        _input.clone().prop({
+                            "type":"hidden",
+                            "value":productCount
+                        }).addClass("initialProductCount")
+                    ).append(
                         _input.clone()
-                            .attr({
-                                "type":"number",
+                            .prop({"type":"hidden",
                                 "name":"productCount_"+rowNumber,
-                                "value":n.productCount
-                            })
+                                "value":productCount,
+                                "min":0})
                             .addClass("productCount")
+                    ).append(
+                        _input.clone().attr({
+                            "type":"number",
+                            "min":0,
+                            "value":0,
+                            "max":maxPruduct,
+                            "onChange":"maximum(this)"
+                        }).addClass("currentProductCount")
+                    ).append(
+                        $("<p></p>").text("最多可以输入"+maxPruduct+"个产品数")
                     );
                     _row.children("td:eq(3)").append(
                         _input.clone().attr(
@@ -556,6 +604,8 @@
                         });
                     if(n.checkTime){
                         checkTimeInput.val(n.checkTime);
+                    }else{
+                    	checkTimeInput.val(today());
                     }
                     _row.children("td:eq(8)").append(
                         checkTimeInput
@@ -571,15 +621,86 @@
                     $("#form1").find("input[name=maxRowNumber]").val(rowNumber);
                     rowNumber++;
                 }
-
             })
             $("#instanceDataTable3>tbody").find("td").addClass("text-center");
         }
 
+        /**
+         * 更新产品数，如果有其他人输入了的话，该值会发生变化，所以必要时候需要更新
+         * @param data datainstanceList
+         */
+        function updateProductCount(){
+            var formLogo='<%=request.getParameter("formLogo")%>';
+            var checkType = $("#checkType").val();
+            $.getJSON(
+                "/Windchill/servlet/Navigation/datainstance",
+                {"actionName":"getByCheckType","logo":formLogo,"checkType":checkType},
+                function (result) {
+                    if(result.data.length!=0){
+                        //在这里要去重，调用procedureIds.indexOf() 的方法
+                        var procedureIds=[];
+                        $.each(result.data,function(i,n){
+                            var procedureId=n.twId;
+                            if(procedureIds.indexOf(procedureId)<0){
+                                procedureIds.push(procedureId);
+                                //新的
+                                $("#instanceDataTable3").find("input.procedureId[value="+procedureId+"]").closest("tr")
+                                    .find("input.initialProductCount").val(n.productCount);
+                            }
+                        })
+                    }else{
+                        alert("发生错误，更新产品数的时候,未获取到后台数据，发生位置请看浏览器控制台");
+                        console.error("调用updateProductCount（）方法的时候没有返回数据");
+                    }
+                }
+            )
+        }
 
+        /**
+         * 计算最大输入的产品数
+         */
+        function maximum(thisInput) {
+            var procedureId=parseInt($(thisInput).closest("tr").find("input.procedureId").val());
+            var formLogo='<%=request.getParameter("formLogo")%>';
+            var checkType = $("#checkType").val();
+            //已有的初始值
+            var initialProductCount=parseInt($(thisInput).parent().find("input.initialProductCount").val());
+            if(!initialProductCount){
+                initialProductCount=0;
+            }
+            //最大生产总数
+            var quantity=parseInt($("#formInfo").find("span[name=quantity]").text());
+            var currentInput=0;
+            if($(thisInput).val()){
+                currentInput=parseInt($(thisInput).val());
+            }
+            //还能输入的产品数
+            var maxPruduct=quantity-currentInput-initialProductCount;
+            if(maxPruduct<0){
+                $(thisInput).val(0);
+                var errorInput=currentInput;
+                currentInput=0;
+                maxPruduct=quantity-currentInput-initialProductCount;
+                $(thisInput).css({"border-color":"#ff0000"}).closest("td")
+                    .find("p").css({"color":"#ff0000"})
+                    .html("当前输入的产品数过多!最多可以输入"+maxPruduct+"个产品数,您输入了"+errorInput+"个");
+            }else{
+                $(thisInput).css({"border-color":"#cccccc"}).closest("td")
+                    .find("p").css({"color":"#000000"})
+                    .text("最多可以输入"+maxPruduct+"个产品数");
+            }
+            var productCountObj=$(thisInput).parent().find("input.productCount");
+            productCountObj.val(initialProductCount+currentInput);
+        }
 		//数据回写
         function showFormInfo(formItem) {
             var formInfo=$("#formInfo");
+			//检验类别转换
+			var checkCategoryObj={
+                    "ZJ":"整机",
+                    "MJ":"模件",
+                    "XL":"线缆"
+                }
             var checkTypeObj={
                 "DZZJ":"电装自检",
                 "DZHJ":"电装互检",
@@ -591,7 +712,7 @@
             }
             var category="",moduleName="",batch="",quantity=0,checkType="",productPhase="";
             if(formItem){
-                category=formItem.category;
+                category=checkCategoryObj[formItem.category];
                 moduleName=formItem.moduleName;
                 batch=formItem.batch;
                 quantity=formItem.quantity;
@@ -648,17 +769,6 @@
             $("#formRow").removeClass("hide");
             $("#infoView").addClass("hide");
         }
-        //检验明细页面检验类型改变时
-        function ChangeCheckType() {
-        	var checkType = $("#checkType").val();
-            var formLogo='<%=request.getParameter("formLogo")%>';
-            $.getJSON("/Windchill/servlet/Navigation/datainstance",{"actionName":"getByCheckType","logo":formLogo,"checkType":checkType},
-                function (result) {
-                showFormInfo(result.data[0]);
-                initMyTable2(result.data);
-                initMyTable3(result.data)
-            })
-		}
     </script>
 </head>
 <body>
@@ -688,7 +798,7 @@
             </div>
         </div>
         <div class="col-md-3 col-md-2">
-            <select id="checkType" class="form-control" onchange="ChangeCheckType()">
+            <select id="checkType" class="form-control" onchange="getDataInstance()">
                 <option value="DZZJ" selected="selected">电装自检</option>
                 <option value="DZJY">电装检验</option>
                 <option value="TSJY">调试检验</option>

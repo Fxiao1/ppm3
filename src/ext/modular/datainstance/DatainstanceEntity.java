@@ -25,7 +25,7 @@ public class DatainstanceEntity extends BasicEntity {
     private String checkType;                         //检验类型
     private String  ProductPhase ;					  //产品阶段  ln
     private String templateName;                      //模板名   ln
-    private String templateId;						//模板id  ln
+    private String templateId;						  //模板id  ln
     private String checkPerson;                       //检验人
     private String checkPersonId;                     //检验人ID
     private Date checkTime;                           //检验时间

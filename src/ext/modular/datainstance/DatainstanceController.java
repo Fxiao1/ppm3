@@ -22,10 +22,7 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * des:
@@ -79,6 +76,14 @@ public class DatainstanceController {
             List<DatainstanceEntity>list=ser.getByCheckType(logo,checkType);
             log.info("正在获取检验类型={},logo={}的数据，获得得的数据条数为{}条",checkType,logo,list.size());
             jsonStr=ResultUtils.succ(list);
+        }
+        //获取当前时刻的产品数
+        else if("getProductCount".equals(actionName)){
+            int logo=Integer.valueOf(request.getParameter("logo"));
+            String checkType=request.getParameter("checkType");
+            int procedureId=Integer.valueOf(request.getParameter("procedureId"));
+            int currentProductCount=ser.getProductCount(logo,checkType,procedureId);
+            jsonStr=ResultUtils.succ(currentProductCount);
         }
         //检验明细录入保存
         else if("add".equals(actionName)){
@@ -177,8 +182,8 @@ public class DatainstanceController {
         //模板id
         String templateId=request.getParameter("templateId");
 
-        //产品数
-        int productCount=0;
+        //本次新加的产品数
+        int newProductCount=0;
         String checkType=null,checkPerson=null,oldProcedureIdStr=null,newProcedureIdStr;
         Date checkTime=null;
         //所有的条目的容器
@@ -186,17 +191,19 @@ public class DatainstanceController {
         //当前工序下的数据
         List<DatainstanceEntity> currentProcedure=new LinkedList<>();
         boolean isNewProcedure=false;
+        DatainstanceSer datainstanceSer=new DatainstanceSer();
         for (int i = 0; i < dataRowNum + 1; i++) {
             DatainstanceEntity ins=new DatainstanceEntity();
             newProcedureIdStr=request.getParameter("procedureId_"+i);
             ins.setBatch(batch);
             ins.setCategory(category);
             ins.setModuleName(moduleName);
-            ins.setProcedureName(request.getParameter("procedureName_"+i));
+            String procedureName=request.getParameter("procedureName_"+i);
+            ins.setProcedureName(procedureName);
             //本行数据有工序id，且当前行与旧行数据的id不同，则说明到了新的工序行了。如果是新工序了，则更新产品数、检验类型、检验人、检验时间这几个变量
             if(newProcedureIdStr!=null&&(!newProcedureIdStr.equals(oldProcedureIdStr))){
                 oldProcedureIdStr=newProcedureIdStr;
-                productCount=strToInt(request.getParameter("productCount_"+i));
+                newProductCount=strToInt(request.getParameter("productCount_"+i));
                 checkType=request.getParameter("checkType_"+i);
                 checkPerson=request.getParameter("checkPerson_"+i);
                 try {
@@ -208,7 +215,17 @@ public class DatainstanceController {
             }else{
                 isNewProcedure=false;
             }
-            ins.setProductCount(productCount);
+            int logo=strToInt(request.getParameter("logo"));
+            ins.setLogo(logo);
+            int twId=strToInt(request.getParameter("procedureId_"+i));
+            ins.setTwId(twId);
+            int oldProductCount=datainstanceSer.getOldProductCount(logo,checkType,twId);
+            if(oldProductCount+newProductCount>quantity){
+                AllDataInstance.clear();
+                AllDataInstance.add(ins);
+                return ResultUtils.packData(AllDataInstance,"当前数据有错误，产品数超过了生产总数",false);
+            }
+            ins.setProductCount(oldProductCount+newProductCount);
             String characQuantityStr=request.getParameter("characQuantity_"+i);
             ins.setCharacQuantity(strToInt(characQuantityStr));
 
@@ -218,7 +235,6 @@ public class DatainstanceController {
             ins.setCheckPerson(checkPerson);
             ins.setCheckTime(checkTime);
             ins.setKj(strToInt(request.getParameter("kj_"+i)));
-            ins.setLogo(strToInt(request.getParameter("logo")));
             ins.setProductId(strToInt(request.getParameter("productId")));
             ins.setProductPhase(ProductPhase);
             ins.setTemplateName(templateName);
@@ -242,7 +258,6 @@ public class DatainstanceController {
                 );
                 return ResultUtils.packData(null,"数据错误，详细错误请查看日志",false);
             }
-            ins.setTwId(strToInt(request.getParameter("procedureId_"+i)));
             ins.setQuantity(quantity);
             //这是新工序的数据，且前一个工序下有数据。或者当前是最后一次遍历。则对其进行一些计算和赋值
             log.info("i={},isNewProcedure={},currentProcedure.size={}",i,isNewProcedure,currentProcedure.size());

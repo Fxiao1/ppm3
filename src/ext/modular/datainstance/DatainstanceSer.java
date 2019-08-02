@@ -355,6 +355,74 @@ public class DatainstanceSer {
         return list;
     }
     /**
+     *  获取该表单下的该类型的该工序的已输入产品数
+     * @Author Fxiao
+     * @Description
+     * @Date 15:59 2019/8/1
+     * @param logo 表单标识
+     * @param checkType 检验类型
+     * @param procedureId datainstance中的工序id
+     * @return int
+     **/
+    public int getProductCount(int logo,String checkType,int procedureId){
+        Connection connection = null;
+        Statement statement = null;
+        int currentProductCount=0;
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr =String.format("SELECT product_count FROM PPM_DATA_INSTANCE " +
+                            "WHERE logo=%s AND CHECK_TYPE='%s' and tw_id=%s",
+                    logo,checkType,procedureId
+            ) ;
+            ResultSet rs=statement.executeQuery(sqlStr);
+            if(rs!=null&&rs.next()){
+                currentProductCount=rs.getInt("product_count");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+        return currentProductCount;
+    }
+    /**
+     * 获取数据库中已有的生产总数
+     * @Description
+     * @Date 10:12 2019/8/2
+     * @param logo 表单标识
+     * @param checkType 检查类型
+     * @param procedureId datainstance中的工序id
+     * @return int 旧的产品数
+     **/
+    public int getOldProductCount(int logo,String checkType,int procedureId){
+        Connection connection = null;
+        Statement statement = null;
+        int oldProductCount=0;
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr=String.format("SELECT product_count,quantity " +
+                            "FROM PPM_DATA_INSTANCE WHERE TW_ID=%s AND CHECK_TYPE='%s' AND LOGO=%s",
+                    procedureId,checkType,logo
+            );
+            ResultSet rs=statement.executeQuery(sqlStr);
+            if(rs!=null&&rs.next()){
+                oldProductCount=rs.getInt("product_count");
+            }
+            log.info("正在检查产品数是否超过生产总数，OldProductCount={},logo={},checkType={},procuceId={},sql={}",
+                    oldProductCount,logo,checkType,procedureId,sqlStr
+            );
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+
+        return oldProductCount;
+    }
+
+    /**
      * 从ResultSet中封装List对象
      * @Author Fxiao
      * @Description
