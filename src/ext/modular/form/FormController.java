@@ -156,12 +156,10 @@ public class FormController {
                 log.info("当前正在执行ext.modular.form.FormController类的update方法，表单标识={}",logo);
                 for (FormEntity form : formEntityList) {
                 	newQuantity = form.getQuantity();
-
                 }
                 if(newQuantity>quantity) {
                 	//修改表单数据实例中的产品总数
                 	dataSer.updateData(logo, newQuantity, connection);
-
                 	 for (FormEntity form : formEntityList) {
                 		 form.setCreator(creator);
                          form.setCreateTime(createTime);
@@ -172,7 +170,6 @@ public class FormController {
             	}else {
             		jsonStr = ResultUtils.error("修改失败，修改产品总数小于原产品总数");
             	}
-
             }
             jsonStr=ResultUtils.succ(null,"表单修改成功");
         }

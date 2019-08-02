@@ -76,7 +76,6 @@
                 <button id="addProductBtn" class="btn btn-info">增加</button>
                 <button id="modifyProductBtn" class="btn btn-info">修改</button>
                 <button id="deleteProductBtn" class="btn btn-info">删除</button>
-                <button id="refreshBtn" class="btn btn-info">刷新</button>
             </div>
 
             <table id="myform" class="table">

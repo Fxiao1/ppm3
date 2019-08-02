@@ -61,6 +61,11 @@
 			//ln 如果有form标识则初始化检验内容配置页面
             function updataTabaleInit(data) {
 				
+            	 var checkCategoryObj={
+                         "ZJ":"整机",
+                         "MJ":"模件",
+                         "XL":"线缆"
+                     }
             	 var checkTypeObj={
                          "DZZJ":"电装自检",
                          "DZHJ":"电装互检",
@@ -77,7 +82,7 @@
                 var batch=data[0].batch;
                 var quantity=data[0].quantity;
                 var moduleName=data[0].moduleName;
-                var category=data[0].category;
+                var category=checkCategoryObj[data[0].category];
                 var checkType=data[0].checkType;
                 var ProductPhase=data[0].ProductPhase;
                 var templateId=data[0].templateId;
@@ -96,13 +101,13 @@
                 	$("#modelList").attr("disabled","disabled");
                 	
                 	//生成表单按钮隐藏
-                	$("#createFormList").attr("style","display:none;");
+                	//$("#createFormList").attr("style","display:none;");
                     $("#myFormEntity").find("input[name=batch]").attr("value",batch);
                 }else{
                 	//下拉菜单的禁用功能移除
                 	$("#modelList").removeAttr("disabled");
                 	//生成表单按钮显示
-                	$("#createFormList").attr("style","display:block;");
+                	//$("#createFormList").attr("style","display:block;");
                 }
 
                 
@@ -258,14 +263,12 @@
                  }
                  //模板名称
                  var templateName=$("#modelList option:selected").text();
-                 alert(templateName);
                  if(!templateName){
                 	 alert("模板不能为空");
                      return false;
                  }
                  //模板id
                  var templateId=$("#modelList option:selected").val();
-                 alert(templateId);
                 var _url="";
                 if(pageType!=="add"){
                     _url="/Windchill/servlet/Navigation/form?actionName=update&logo="+formLogo;
@@ -316,6 +319,8 @@
                     dataType:'json',
                     success:function (result) {
                         if(result.success){
+                            //先刷新父页面的数据
+                            window.opener.refresh();
                             //关闭当前页面
                             window.opener = null;
                             window.open('', '_self');
@@ -517,7 +522,6 @@
                     $("#chrarcForm").find("select[name=charaList]")
                         .find("option:contains('未选择')").find("option:not(0)").remove();
                 })
-                
             }
 
         </script>

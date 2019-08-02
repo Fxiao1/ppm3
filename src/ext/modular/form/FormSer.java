@@ -273,9 +273,8 @@ public class FormSer {
             connection = ConnectionUtil.getConnection();
             statement=connection.createStatement();
             String sqlStr=String.format("DELETE FROM ppm_form WHERE logo=%s",logo);
-            statement.execute(sqlStr);
             log.info("删除的sql为“{}”",sqlStr);
-            log.info("logo={}",logo);
+            statement.execute(sqlStr);
         }catch (SQLException e) {
             e.printStackTrace();
         }finally {

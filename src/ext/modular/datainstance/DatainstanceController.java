@@ -64,7 +64,7 @@ public class DatainstanceController {
             if(logo==0){
                 jsonStr=ResultUtils.error("未获取到表单标识");
             }else{
-                List list=ser.getListByLogo(logo,conn);
+                List list=ser.getListByLogo(logo);
                 log.info("查询到的数据实例条数为：{}条",list.size());
                 jsonStr=ResultUtils.succ(list);
             }

@@ -1,7 +1,6 @@
 
 //user
 $(function(){
-
     //初始化型号树
     getModelList();
     //注册按钮
@@ -135,11 +134,14 @@ function initTable(list){
     var designMember=$("#info").find("input[name=designMember]").val();
  //如果当前用户为检验员，按钮隐藏，操作显示，否则按钮显示，操作隐藏。
     var buttonGroup=$("#addProductBtn").closest("div");
+    var buttonModel = $("#addModelBtn").closest("div");
     if(checkMember=="true"){
     	buttonGroup.removeClass("show").addClass("hide");
+    	buttonModel.removeClass("show").addClass("hide");
     }
     if(designMember=="true"){
     	buttonGroup.removeClass("hide").addClass("show");
+    	buttonModel.removeClass("hide").addClass("show");
     }
 
     if(myformTable){
@@ -188,7 +190,7 @@ function initTable(list){
                 return '<input  type="hidden" name="formSign" value="'+data+'"/>';
             }}
         ],
-        language:{"decimal":"","emptyTable":"无数据","info":"显示 _START_ 到 _END_ 页共 _TOTAL_ 条","infoEmpty":"显示 0 到 0 页共 0 条","infoFiltered":"(filtered from _MAX_ total entries)","infoPostFix":"","thousands":",","lengthMenu":"显示 _MENU_ 条","loadingRecords":"加载中...","processing":"Processing...","search":"搜索:","zeroRecords":"没有匹配项","paginate":{"first":"首页","last":"尾页","next":"下页","previous":"上页"},"aria":{"sortAscending":": activate to sort column ascending","sortDescending":": activate to sort column descending"},}
+        language:{"decimal":"","emptyTable":"无数据","info":"显示 _START_ 到 _END_ 页共 _TOTAL_ 条","infoEmpty":"显示 0 到 0 页共 0 条","infoFiltered":"(从 _MAX_ 个总条目中筛选)","infoPostFix":"","thousands":",","lengthMenu":"显示 _MENU_ 条","loadingRecords":"加载中...","processing":"Processing...","search":"搜索:","zeroRecords":"没有匹配项","paginate":{"first":"首页","last":"尾页","next":"下页","previous":"上页"},"aria":{"sortAscending":": activate to sort column ascending","sortDescending":": activate to sort column descending"},}
 
     }
     myformTable=$("#myform").DataTable(option);
@@ -206,7 +208,23 @@ function toWritePage(logo){
         "&productCode="+productCode+"&productName="+productName+"&formLogo="+logo);
 }
 
+/**
+ * 刷新，相当于再次点击了一下左侧树结构中的产品
+ * 注意！绝对不要在这里写alert()方法，因为该方法会将子页面的关闭操作阻塞
+ */
 
+function refresh() {
+    var currentNode=$('#tree').treeview('getSelected')[0];
+    if(currentNode&&currentNode.type=="product"){
+        var productId=currentNode.id;
+        getFormList(productId);
+        //获取父节点的一些信息
+        var parentNode=$('#tree').treeview('getNode', currentNode.parentId);
+        $("#info").find("input[name=modelName]").val(parentNode.text);
+        $("#info").find("input[name=modalCode]").val(parentNode.code);
+        $("#info").find("input[name=productName]").val(currentNode.text);
+    }
+}
 
 
 //绑定按钮
@@ -276,7 +294,7 @@ function bindBtn() {
     //产品模态框里面的确定按钮
     $("#productFormSubmit").click(function () {
         addProduct();
-        $("#productModal").modal("hide");
+
     });
     //增加表单定义的按钮
     $("#addProductBtn").click(function () {
@@ -367,19 +385,6 @@ function bindBtn() {
             }
         })
     });
-    //刷新按钮，相当于再次点击了一下左侧树结构中的产品
-    $("#refreshBtn").click(function () {
-        var currentNode=$('#tree').treeview('getSelected')[0];
-        if(currentNode&&currentNode.type=="product"){
-            var productId=currentNode.id;
-            getFormList(productId);
-            //获取父节点的一些信息
-            var parentNode=$('#tree').treeview('getNode', currentNode.parentId);
-            $("#info").find("input[name=modelName]").val(parentNode.text);
-            $("#info").find("input[name=modalCode]").val(parentNode.code);
-            $("#info").find("input[name=productName]").val(currentNode.text);
-        }
-    });
 }
 //注册事件
 function bindEvent() {
@@ -433,9 +438,11 @@ function addProduct() {
         success:function (result) {
             if(result.success){
                 //刷新左侧的型号树
+            	$("#productModal").modal("hide");
                 getModelList();
             }else{
                 alert(result.message);
+                return false;
             }
         },
         error:function (a,b,c,d) {

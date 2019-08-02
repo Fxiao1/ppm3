@@ -47,39 +47,36 @@ public class DatainstanceSer {
     public int getquantityByLogo(int logo,Connection connection){
     	 Statement statement = null;
     	 int quantity = 0;
-    	 String sql = String.format("SELECT logo FROM PPM_DATA_INSTANCE where logo=%s group by logo",logo);
-
+    	 String sql = String.format("SELECT quantity FROM PPM_DATA_INSTANCE where logo=%s GROUP BY quantity",logo);
              try {
 				statement=connection.createStatement();
 				 ResultSet rs = statement.executeQuery(sql);
-				 if (rs != null) {
-		                while (rs.next()) {
-		                	quantity=rs.getInt("quantity");
-		                	System.out.println("产品总数"+quantity);
-		                }
-				 }
+				 if(rs!=null&&rs.next()){
+                     quantity=rs.getInt("quantity");
+                     log.info("产品总数={}",quantity);
+                 }
 			} catch (SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
-
 		return quantity;
 
     }
 
-    public List<DatainstanceEntity> getListByLogo(int logo,Connection connection){
+    public List<DatainstanceEntity> getListByLogo(int logo){
+        Connection connection=null;
         Statement statement = null;
         List<DatainstanceEntity> list = new LinkedList<>();
         String sql = "SELECT * FROM PPM_DATA_INSTANCE where logo=" + logo;
         try {
+            connection=ConnectionUtil.getConnection();
             statement=connection.createStatement();
             ResultSet rs = statement.executeQuery(sql);
             list=encapsulationList(rs);
         } catch (SQLException e) {
             e.printStackTrace();
         }finally {
-            ConnectionUtil.close(null,statement);
+            ConnectionUtil.close(connection,statement);
         }
         return list;
     }
