@@ -109,14 +109,41 @@ public class DatainstanceController {
             }
         }else if("update".equals(actionName)){
             String dataInstanceListJsonstr=request.getParameter("dataInstanceList");
-            log.info("正在进行修改表单实例操作");
+            log.info("判断进行新增还是修改操作");
+            DatainstanceEntity datainstanceEntity = new DatainstanceEntity();
+            boolean flag =false;
             List<DatainstanceEntity> formEntityList = gson.fromJson(dataInstanceListJsonstr,new TypeToken<List<DatainstanceEntity>>() {}.getType());
             if(formEntityList!=null&&formEntityList.size()>0){
                 for (DatainstanceEntity datainstance : formEntityList) {
-                    ser.updateDataInstance(datainstance,conn);
+                	//根据产品id，工序名，检验类型查询表单数据实例表中是否有数据如果没有则为添加，有则为修改
+                	String characName = datainstance.getCharacName();
+                	int productId = datainstance.getProductId();
+                	String checkType = datainstance.getCheckType();
+                	int logo = datainstance.getLogo();
+                	datainstanceEntity.setCharacName(characName);
+                	datainstanceEntity.setProductId(productId);
+                	datainstanceEntity.setCheckType(checkType);
+                	datainstanceEntity.setLogo(logo);
+                	flag = ser.getStatus(datainstanceEntity);
+                	log.info("状态显示"+flag);
+                	 FormSer formSer=new FormSer();
+                     int dataMark=formSer.getLogo();
+                	if(flag) {
+                		//有数据进行修改操作
+                		log.info("进行修改表单数据实例操作");
+                		 ser.updateDataInstance(datainstance,conn);
+                		 jsonStr = ResultUtils.succ(null,"保存成功");
+                	}else {
+                		log.info("进行添加表单数据实例操作");
+                		ser.add(datainstance,conn,dataMark);
+                		jsonStr = ResultUtils.succ(null,"新增成功");
+                	}
+
+
+
                 }
             }
-            jsonStr = ResultUtils.succ(null,"保存成功");
+
 
         }
         response.setCharacterEncoding("utf-8");
@@ -219,7 +246,18 @@ public class DatainstanceController {
             ins.setLogo(logo);
             int twId=strToInt(request.getParameter("procedureId_"+i));
             ins.setTwId(twId);
-            int oldProductCount=datainstanceSer.getOldProductCount(logo,checkType,twId);
+            int id=strToInt(request.getParameter("dataItemIds_"+i));
+            int oldProductCount=0;
+            int oldDefectNumber=0;
+            if(id!=0){
+                ins.setId(id);
+                List<DatainstanceEntity>list=datainstanceSer.get(id);
+                log.info("list.size={},id={}",list.size(),id);
+                if(list.size()>0){
+                    oldProductCount=list.get(0).getProductCount();
+                    oldDefectNumber=list.get(0).getDefectNumber();
+                }
+            }
             if(oldProductCount+newProductCount>quantity){
                 AllDataInstance.clear();
                 AllDataInstance.add(ins);
@@ -230,7 +268,8 @@ public class DatainstanceController {
             ins.setCharacQuantity(strToInt(characQuantityStr));
 
             ins.setCharacName(request.getParameter("characName_"+i));
-            ins.setDefectNumber(strToInt(request.getParameter("defectNumber_"+i)));
+            int newDefectNumber=strToInt(request.getParameter("defectNumber_"+i));
+            ins.setDefectNumber(oldDefectNumber+newDefectNumber);
             ins.setCheckType(checkType);
             ins.setCheckPerson(checkPerson);
             ins.setCheckTime(checkTime);
@@ -241,10 +280,6 @@ public class DatainstanceController {
             ins.setTemplateId(templateId);
             log.info("接收到的logo={},接收到的产品id={}。",request.getParameter("logo")
                 ,request.getParameter("productId"));
-            Integer id=strToInt(request.getParameter("dataItemIds_"+i));
-            if(id!=null){
-                ins.setId(id);
-            }
             //工序检验特性总数
             ins.setCharacteristicsTotal(ins.getProductCount()*ins.getCharacQuantity());
             //工序检验特性检出的缺陷总数对应的每条特性的值

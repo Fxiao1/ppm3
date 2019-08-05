@@ -65,7 +65,7 @@
                         $("#hideInfo").find("input[name=pageType]").val("update");
                         $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
                         showFormInfo(result.data[0]);
-                        initMyTable2(result.data);
+                        initMyTable2(result.data,"beforCalculation");
                         initMyTable3(result.data);
                     }
                 }
@@ -105,7 +105,13 @@
                     $(n).closest("td").addClass("has-error");
                     $(n).prop("title","该数字框内必须是正整数");
                     hasError=true;
+                };
+
+                if($(n).hasClass("notZero")&&$(n).val()=="0"){
+                    $(n).parent().find("p").css({"color":"#ff0000"}).text("该值不能为空或0 ！");
+                    hasError=true;
                 }
+
             });
             if(hasError){
                 alert("检查发现数字输入框有部分错误，具体错误原因，请将鼠标移至红色框上查看")
@@ -127,7 +133,7 @@
                 success:function (result) {
                     if(result.success){
                         $("#hideInfo").find("input[name=allDataInstance]").val(JSON.stringify(result.data));
-                        initMyTable2(result.data);
+                        initMyTable2(result.data,"afterCalculation");
                         $("#formRow").addClass("hide");
                         $("#infoView").removeClass("hide");
                     }else{
@@ -161,7 +167,7 @@
                 success:function (result) {
                     if(result.success){
                         showFormInfo(result.data[0]);
-                        initMyTable2(result.data);
+                        initMyTable2(result.data,"beforCalculation");
                         initMyTable3(result.data)
                     }else{
                         alert(result.message)
@@ -176,10 +182,10 @@
 
         /**
          * 初始化“#instanceDataTable2”这张表
-         * @param resultData “ext.modular.form.FormEntity”对象列表，或者
-         * “ext.modular.datainstance.DatainstanceEntity”对象列表
+         * @param resultData “ext.modular.form.FormEntity”对象列表，或者“ext.modular.datainstance.DatainstanceEntity”对象列表
+         * @param type 数据类型。分为计算前的数据(beforCalculation)和计算后的数据(afterCalculation)
          */
-        function initMyTable2(resultData){
+        function initMyTable2(resultData,type){
             $("#instanceDataTable2>tbody").html("");
             //封装数据成为一个对象“a”，该对象的key为工序名,该工序下所有的数据为value.也就是在前台对这个蛋疼的数据进行分组
             //对象形状为{"工序名1":[item1,item2],"工序名2":[item3,item4]}
@@ -219,11 +225,25 @@
                             ).addClass(n.procedureName+"_productCount");
                             _row.children("td:eq(3)").text(n.characName);
                             _row.children("td:eq(4)").text(n.characQuantity);
+                            var characteristicsTotal=0;
+                            if(n.characteristicsTotal){
+                                characteristicsTotal=n.characteristicsTotal;
+                            }
                             _row.children("td:eq(5)").append(
                                 _input.clone().prop({"type":"hidden","name":"procedureName"})
                                     .val(n.procedureName)
-                            ).text(n.characteristicsTotal);
-                            _row.children("td:eq(6)").text(n.defectNumber).addClass("qxNumber");
+                            ).text(characteristicsTotal);
+                            var eq6=_row.children("td:eq(6)").addClass("qxNumber");
+                            /* if(type=="beforCalculation"){
+                                eq6.text(0);
+                            }else if(type=="afterCalculation"){
+                                eq6.text(n.defectNumber);
+                            } */
+                            var defectNumber=0;
+                            if(n.defectNumber){
+                            	defectNumber=n.defectNumber;
+                            }
+                            eq6.text(defectNumber);
                             _row.children("td:eq(7)").text(n.kj);
                             _row.children("td:eq(8)").prop("rowspan",le).addClass(n.procedureName+"_proceQx")
                                 .text(defectNumberCounts[n.procedureName]);
@@ -234,11 +254,25 @@
                             var _row=$('<tr><td></td><td></td><td></td><td></td><td></td></tr>');
                             _row.children("td:eq(0)").text(n.characName);
                             _row.children("td:eq(1)").text(n.characQuantity);
+                            var characteristicsTotal=0;
+                            if(n.characteristicsTotal){
+                                characteristicsTotal=n.characteristicsTotal;
+                            }
                             _row.children("td:eq(2)").append(
                                 _input.clone().prop({"type":"hidden","name":"procedureName"})
                                     .val(n.procedureName)
-                            ).text(n.characteristicsTotal);
-                            _row.children("td:eq(3)").text(n.defectNumber).addClass("qxNumber");
+                            ).text(characteristicsTotal);
+                            var eq3=_row.children("td:eq(3)").addClass("qxNumber");
+                           /*  if(type=="beforCalculation"){
+                                eq3.text(0);
+                            }else if(type=="afterCalculation"){
+                                eq3.text(n.defectNumber);
+                            } */
+                            var defectNumber=0;
+                            if(n.defectNumber){
+                            	defectNumber=n.defectNumber;
+                            }
+                            eq3.text(defectNumber);
                             _row.children("td:eq(4)").text(n.kj);
                             $("#instanceDataTable2>tbody").append(_row);
                         }
@@ -253,11 +287,25 @@
                     ).addClass(n.procedureName+"_productCount");
                     _row.children("td:eq(3)").text(n.characName);
                     _row.children("td:eq(4)").text(n.characQuantity);
+                    var characteristicsTotal=0;
+                    if(n.characteristicsTotal){
+                        characteristicsTotal=n.characteristicsTotal;
+                    }
                     _row.children("td:eq(5)").append(
                         _input.clone().prop({"type":"hidden","name":"procedureName"})
                             .val(n.procedureName)
-                    ).text(n.characteristicsTotal);
-                    _row.children("td:eq(6)").text(n.defectNumber).addClass("qxNumber");
+                    ).text(characteristicsTotal);
+                    var eq6=_row.children("td:eq(6)").addClass("qxNumber");
+                    /* if(type=="beforCalculation"){
+                        eq6.text(0);
+                    }else if(type=="afterCalculation"){
+                        eq6.text(n.defectNumber);
+                    } */
+                    var defectNumber=0;
+                    if(n.defectNumber){
+                    	defectNumber=n.defectNumber;
+                    }
+                    eq6.text(defectNumber);
                     _row.children("td:eq(7)").text(n.kj);
                     _row.children("td:eq(8)").text(n.defectNumberItem?n.defectNumberItem:"0").addClass(n.procedureName+"_proceQx");
                     _row.children("td:eq(9)").text(n.procedurePpm?n.procedurePpm:"0");
@@ -375,7 +423,7 @@
                                     "max":maxPruduct,
                                     "name":"productCount_"+rowNumber,
                                     "onChange":"maximum(this)"
-                                }).addClass("currentProductCount")
+                                }).addClass("currentProductCount").addClass("notZero")
                             ).append(
                                 $("<p></p>").text("最多可以输入"+maxPruduct+"个产品数")
                             );
@@ -398,7 +446,7 @@
                                     .prop({
                                         "type":"number",
                                         "name":"defectNumber_"+rowNumber,
-                                        "value":n.defectNumber,
+                                        "value":0,
                                         "min":0
                                     })
                                     .addClass("qxNumber")
@@ -472,7 +520,7 @@
                                     .prop({
                                         "type":"number",
                                         "name":"defectNumber_"+rowNumber,
-                                        "value":n.defectNumber,
+                                        "value":0,
                                         "min":0
                                     })
                                     .addClass("qxNumber").text(n.defectNumber)
@@ -547,7 +595,7 @@
                             "max":maxPruduct,
                             "name":"productCount_"+rowNumber,
                             "onChange":"maximum(this)"
-                        }).addClass("currentProductCount")
+                        }).addClass("currentProductCount").addClass("notZero")
                     ).append(
                         $("<p></p>").text("最多可以输入"+maxPruduct+"个产品数")
                     );
@@ -570,7 +618,7 @@
                             .prop({
                                 "type":"number",
                                 "name":"defectNumber_"+rowNumber,
-                                "value":n.defectNumber
+                                "value":0
                             })
                             .addClass("qxNumber")
                     ).append(
@@ -649,8 +697,8 @@
                             }
                         })
                     }else{
-                        alert("发生错误，更新产品数的时候,未获取到后台数据，发生位置请看浏览器控制台");
-                        console.error("调用updateProductCount（）方法的时候没有返回数据");
+                        //如果没有获取到，说明之前没有存入数据
+                        $("#instanceDataTable3").find("input.initialProductCount").val(0);
                     }
                 }
             )
@@ -677,13 +725,13 @@
             //还能输入的产品数
             var maxPruduct=quantity-currentInput-initialProductCount;
             if(maxPruduct<0){
-                $(thisInput).val(0);
+                // $(thisInput).val(0);
                 var errorInput=currentInput;
                 currentInput=0;
                 maxPruduct=quantity-currentInput-initialProductCount;
                 $(thisInput).css({"border-color":"#ff0000"}).closest("td")
                     .find("p").css({"color":"#ff0000"})
-                    .html("当前输入的产品数过多!最多可以输入"+maxPruduct+"个产品数,您输入了"+errorInput+"个");
+                    .text("当前输入的产品数过多!最多可以输入"+maxPruduct+"个产品数,您输入了"+errorInput+"个");
             }else{
                 $(thisInput).css({"border-color":"#cccccc"}).closest("td")
                     .find("p").css({"color":"#000000"})
@@ -753,7 +801,6 @@
                         window.opener = null;
                         window.open('', '_self');
                         window.close();
-                        // $('#form1').get(0).reset();
                     }else{
                         alert(result.message)
                     }

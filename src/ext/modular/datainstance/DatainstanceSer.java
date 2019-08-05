@@ -384,7 +384,7 @@ public class DatainstanceSer {
         return currentProductCount;
     }
     /**
-     * 获取数据库中已有的生产总数
+     * (方法作废)根据表单标识、检验类型、工序id查询数据
      * @Description
      * @Date 10:12 2019/8/2
      * @param logo 表单标识
@@ -392,32 +392,54 @@ public class DatainstanceSer {
      * @param procedureId datainstance中的工序id
      * @return int 旧的产品数
      **/
-    public int getOldProductCount(int logo,String checkType,int procedureId){
+    /*public List<DatainstanceEntity> get(int logo,String checkType,int procedureId){
         Connection connection = null;
         Statement statement = null;
-        int oldProductCount=0;
+        List<DatainstanceEntity> list=new LinkedList<>();
         try {
             connection = ConnectionUtil.getConnection();
             statement = connection.createStatement();
-            String sqlStr=String.format("SELECT product_count,quantity " +
+            String sqlStr=String.format("SELECT * " +
                             "FROM PPM_DATA_INSTANCE WHERE TW_ID=%s AND CHECK_TYPE='%s' AND LOGO=%s",
                     procedureId,checkType,logo
             );
             ResultSet rs=statement.executeQuery(sqlStr);
-            if(rs!=null&&rs.next()){
-                oldProductCount=rs.getInt("product_count");
-            }
+            list=encapsulationList(rs);
             log.info("正在检查产品数是否超过生产总数，OldProductCount={},logo={},checkType={},procuceId={},sql={}",
-                    oldProductCount,logo,checkType,procedureId,sqlStr
+                    list.get(0).getProductCount(),logo,checkType,procedureId,sqlStr
             );
         } catch (SQLException e) {
             e.printStackTrace();
         }finally {
             ConnectionUtil.close(connection, statement);
         }
-
-        return oldProductCount;
+        return list;
+    }*/
+    /**
+     *
+     * @Description
+     * @Date 11:03 2019/8/5
+     * @param id 单条数据id
+     * @return java.util.List<ext.modular.datainstance.DatainstanceEntity>
+     **/
+    public List<DatainstanceEntity> get(int id){
+        Connection connection = null;
+        Statement statement = null;
+        List<DatainstanceEntity> list=new LinkedList<>();
+        try {
+            connection = ConnectionUtil.getConnection();
+            statement = connection.createStatement();
+            String sqlStr="SELECT * FROM PPM_DATA_INSTANCE WHERE id="+id;
+            ResultSet rs=statement.executeQuery(sqlStr);
+            list=encapsulationList(rs);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }finally {
+            ConnectionUtil.close(connection, statement);
+        }
+        return list;
     }
+
 
     /**
      * 从ResultSet中封装List对象
@@ -469,6 +491,43 @@ public class DatainstanceSer {
             }
         }
         return list;
+    }
+
+    /**
+     * 根据logo、产品id、工序名,检验类型判断数据库是否已有数据
+     *
+     * @param datainstanceEntity
+     * @return Boolean
+     * @Author ln
+     * @Description
+     * @Date 2019/6/19
+     **/
+    public Boolean getStatus(DatainstanceEntity datainstanceEntity) {
+        Connection connection = null;
+        Statement statement = null;
+        ResultSet resultSet = null;
+        boolean flag = false;
+        try {
+            connection = ConnectionUtil.getJdbcConnection();
+            statement = connection.createStatement();
+            String sqlStr = String.format("SELECT %s FROM ppm_data_instance where logo=%s and product_id=%s and check_type= '%s' and charac_name='%s'",
+            				selectField, datainstanceEntity.getLogo(), datainstanceEntity.getProductId(),datainstanceEntity.getCheckType(),datainstanceEntity.getCharacName());
+            log.info("查询的sql为“{}”", sqlStr);
+            resultSet = statement.executeQuery(sqlStr);
+            if (resultSet != null) {
+            	 while (resultSet.next()){
+            		 flag = true;
+                     log.info("查询结果是否为空"+flag);
+                 }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        } finally {
+            ConnectionUtil.close(connection, statement);
+        }
+        return flag;
     }
 
 }
