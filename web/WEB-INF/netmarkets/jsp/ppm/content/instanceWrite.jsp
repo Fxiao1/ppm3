@@ -536,7 +536,6 @@
                     ).append(
                         _input.clone()
                             .prop({"type":"hidden",
-                                "name":"productCount_"+rowNumber,
                                 "value":productCount,
                                 "min":0})
                             .addClass("productCount")
@@ -546,6 +545,7 @@
                             "min":0,
                             "value":0,
                             "max":maxPruduct,
+                            "name":"productCount_"+rowNumber,
                             "onChange":"maximum(this)"
                         }).addClass("currentProductCount")
                     ).append(
@@ -732,13 +732,13 @@
             var dataInstanceListStr=$("#hideInfo").find("input[name=allDataInstance]").val();
             var _data={"dataInstanceList":dataInstanceListStr};
             //actionName直接作为参数好像还解析不出来，不知道怎么回事。目前暂且先拼接到url中来
-            var _url="";
+            var _url="/Windchill/servlet/Navigation/datainstance?actionName=update";
             var pageType=$("#hideInfo").find("input[name=pageType]").val();
-            if(pageType=="update"){
+            /* if(pageType=="update"){
                 _url='/Windchill/servlet/Navigation/datainstance?actionName=update';
             }else{
                 _url='/Windchill/servlet/Navigation/datainstance?actionName=add';
-            }
+            } */
             $.ajax({
                 url:_url,
                 type:'post',
@@ -747,6 +747,8 @@
                 success:function (result) {
                     if(result.success){
                         // $("#formRow").addClass("hide");
+                        //先刷新父页面的数据
+                            window.opener.refresh();
                         //关闭当前页面
                         window.opener = null;
                         window.open('', '_self');
